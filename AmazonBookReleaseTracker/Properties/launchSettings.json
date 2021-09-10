@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AmazonBookReleaseTracker": {
+      "commandName": "Project",
+      "commandLineArgs": "export -f \"ics\" --newOnly"
+    }
+  }
+}
