@@ -66,6 +66,22 @@ namespace AmazonBookReleaseTracker
                 }
             }
 
+            if (File.Exists(_pathToDataOld))
+            {
+                if (force)
+                {
+                    File.Delete(_pathToDataOld);
+                }
+            }
+
+            if (File.Exists(_pathToDataNew))
+            {
+                if (force)
+                {
+                    File.Delete(_pathToDataNew);
+                }
+            }
+
             _settings = new AmazonBookReleaseTrackerSettings();
 
             _settingsImported = true;
@@ -584,7 +600,7 @@ namespace AmazonBookReleaseTracker
                 case OutputFormat.csv:
                     WriteBooksCsv(amazonSeries, amazonBooks, append);
                     break;
-                case OutputFormat.ics:
+                case OutputFormat.icalendar:
                     WriteBooksIcs(amazonSeries, amazonBooks, append);
                     break;
                 default:
@@ -617,10 +633,8 @@ namespace AmazonBookReleaseTracker
         {
             Log.Information("Writing csv file.");
 
-            string fileName = $"releaseDates-{ DateTime.Now.ToString("d").Replace(" ", "") }csv";
-
             using (var writer = new StreamWriter(
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), fileName),
+                _settings.GetExportPath("csv"),
                 append: false))
             using (var csv = new CsvWriter(writer, _csvConfig))
             {
@@ -642,7 +656,7 @@ namespace AmazonBookReleaseTracker
             IEnumerable<AmazonBook> amazonBooks,
             bool append)
         {
-            Log.Information("Writing ics file.");
+            Log.Information("Writing iCalendar file.");
             
             var cal = new Ical.Net.Calendar();
             cal.AddTimeZone(new VTimeZone(_settings.TimeZoneTZ));
@@ -661,11 +675,12 @@ namespace AmazonBookReleaseTracker
                 cal.Events.Add(book.GetCalendarEvent(_settings.IcsCategories));
             }
             
-            string fileName = $"releaseDates-{ DateTime.Now.ToString("d").Replace(" ", "") }ics";
             string calString = "";
-
             var serializer = new CalendarSerializer();
-            using (var writer = new StreamWriter(@fileName, append: false))
+
+            using (var writer = new StreamWriter(
+                _settings.GetExportPath("ics"),
+                append: false))
             {
                 calString = serializer.SerializeToString(cal);
                 writer.Write(calString);
@@ -771,6 +786,6 @@ namespace AmazonBookReleaseTracker
     {
         console,
         csv,
-        ics,
+        icalendar,
     }
 }

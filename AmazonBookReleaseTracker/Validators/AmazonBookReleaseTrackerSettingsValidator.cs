@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -500,6 +501,15 @@ namespace AmazonBookReleaseTracker
                 .Cascade(CascadeMode.StopOnFirstFailure)
                 .NotEmpty()
                 .Must(_timeZoneTZ.Contains).WithMessage("{PropertyName} must be a valid TZ timezone.");
+
+            RuleFor(s => s.ExportNameScheme)
+                .Cascade(CascadeMode.StopOnFirstFailure)
+                .NotEmpty();
+
+            RuleFor(s => s.ExportDirectory)
+                .Cascade(CascadeMode.StopOnFirstFailure)
+                .NotEmpty()
+                .Must(Directory.Exists).WithMessage("{PropertyName} must be an existing directory.");
         }
     }
 }
