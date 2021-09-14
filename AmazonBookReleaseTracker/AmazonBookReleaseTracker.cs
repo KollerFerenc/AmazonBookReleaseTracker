@@ -104,73 +104,7 @@ namespace AmazonBookReleaseTracker
         }
 
         [Command(
-            Name = "addSeries",
-            Description = "Add series to track.")]
-        public void AddSeries(AmazonId amazonId)
-        {
-            if (!_settingsImported)
-            {
-                ImportSettings();
-            }
-
-            if (_settings.TrackedSeries.Contains(amazonId))
-            {
-                Log.Information($"{ amazonId.Asin } series already tracked.");
-            }
-            else
-            {
-                _settings.TrackedSeries.Add(amazonId);
-                Log.Information($"{ amazonId.Asin } series tracked.");
-                SaveConfig();
-            }
-        }
-
-        [Command(
-            Name = "addBook",
-            Description = "Add book to track.")]
-        public void AddBook(AmazonId amazonId)
-        {
-            if (!_settingsImported)
-            {
-                ImportSettings();
-            }
-
-            if (_settings.TrackedBooks.Contains(amazonId))
-            {
-                Log.Information($"{ amazonId.Asin } book already tracked.");
-            }
-            else
-            {
-                _settings.TrackedBooks.Add(amazonId);
-                Log.Information($"{ amazonId.Asin } book tracked.");
-                SaveConfig();
-            }
-        }
-
-        [Command(
-            Name = "addIgnore",
-            Description = "Ignore this id.")]
-        public void AddIgnore(AmazonId amazonId)
-        {
-            if (!_settingsImported)
-            {
-                ImportSettings();
-            }
-
-            if (_settings.IgnoredIds.Contains(amazonId))
-            {
-                Log.Information($"{ amazonId.Asin } asin already in ignore list.");
-            }
-            else
-            {
-                _settings.IgnoredIds.Add(amazonId);
-                Log.Information($"{ amazonId.Asin } asin added to ignore list.");
-                SaveConfig();
-            }
-        }
-
-        [Command(
-            Name = "addLink",
+            Name = "add",
             Description = "Add id from amazon link.")]
         public void AddLink(AmazonLink amazonLink)
         {
@@ -225,71 +159,107 @@ namespace AmazonBookReleaseTracker
         }
 
         [Command(
-            Name = "removeSeries",
-            Description = "Remove tracking from series.")]
-        public void RemoveSeries(AmazonId amazonId)
+            Name = "remove",
+            Description = "Remove tracking from link.")]
+        public void RemoveLink(AmazonLink amazonLink)
         {
             if (!_settingsImported)
             {
                 ImportSettings();
             }
 
-            bool result = _settings.TrackedSeries.Remove(amazonId);
-
-            if (result)
+            if (amazonLink.TryGetAmazonId(out AmazonId amazonId))
             {
-                Log.Information($"{ amazonId.Asin } removed series tracking.");
-                SaveConfig();
+                switch (amazonLink.GetProductType())
+                {
+                    case AmazonProductType.Book:
+                        if (_settings.TrackedBooks.Remove(amazonId))
+                        {
+                            Log.Information($"{ amazonId.Asin } removed book tracking.");
+                            SaveConfig();
+                        }
+                        else
+                        {
+                            Log.Error($"Could not find { amazonId.Asin }.");
+                        }
+                        break;
+                    case AmazonProductType.Series:
+                        if (_settings.TrackedSeries.Remove(amazonId))
+                        {
+                            Log.Information($"{ amazonId.Asin } removed series tracking.");
+                            SaveConfig();
+                        }
+                        else
+                        {
+                            Log.Error($"Could not find { amazonId.Asin }.");
+                        }
+                        break;
+                    case AmazonProductType.Unknown:
+                        Log.Error("Could not determine product type.");
+                        Program.Exit(ExitCode.NoProductType);
+                        break;
+                    default:
+                        Log.Error("Could not determine product type.");
+                        Program.Exit(ExitCode.NoProductType);
+                        break;
+                }
             }
             else
             {
-                Log.Error($"Could not find { amazonId.Asin }.");
+                Log.Error("Could not find id.");
+                Program.Exit(ExitCode.NoIdFound);
             }
         }
 
         [Command(
-            Name = "removeBook",
-            Description = "Remove tracking from book.")]
-        public void RemoveBook(AmazonId amazonId)
+            Name = "ignore",
+            Description = "Ignore this id.")]
+        public void IgnoreLink(
+            AmazonLink amazonLink,
+            [Option(
+                LongName = "remove",
+                ShortName = "r",
+                Description="Remove this id from ignored list.",
+                BooleanMode=BooleanMode.Implicit)]
+            bool remove)
         {
             if (!_settingsImported)
             {
                 ImportSettings();
             }
 
-            bool result = _settings.TrackedBooks.Remove(amazonId);
-
-            if (result)
+            if (amazonLink.TryGetAmazonId(out AmazonId amazonId))
             {
-                Log.Information($"{ amazonId.Asin } removed book tracking.");
-                SaveConfig();
+                if (remove)
+                {
+                    if (_settings.IgnoredIds.Remove(amazonId))
+                    {
+                        Log.Information($"{ amazonId.Asin } removed from ignore list.");
+                        SaveConfig();
+                    }
+                    else
+                    {
+                        Log.Error($"Could not find { amazonId.Asin }.");
+                    }
+                }
+                else
+                {
+                    if (_settings.IgnoredIds.Contains(amazonId))
+                    {
+                        Log.Information($"{ amazonId.Asin } asin already in ignore list.");
+                    }
+                    else
+                    {
+                        _settings.IgnoredIds.Add(amazonId);
+                        Log.Information($"{ amazonId.Asin } asin added to ignore list.");
+                        SaveConfig();
+                    }
+                }
             }
             else
             {
-                Log.Error($"Could not find { amazonId.Asin }.");
-            }
-        }
-
-        [Command(
-            Name = "removeIgnore",
-            Description = "Remove id from ignored.")]
-        public void RemoveIgnore(AmazonId amazonId)
-        {
-            if (!_settingsImported)
-            {
-                ImportSettings();
-            }
-
-            bool result = _settings.IgnoredIds.Remove(amazonId);
-
-            if (result)
-            {
-                Log.Information($"{ amazonId.Asin } removed from ignore list.");
-                SaveConfig();
-            }
-            else
-            {
-                Log.Error($"Could not find { amazonId.Asin }.");
+                Log.Error("Could not find id.");
+                Program.Exit(ExitCode.NoIdFound);
             }
         }
 
@@ -583,7 +553,6 @@ namespace AmazonBookReleaseTracker
                 data = analyzer.GetAll();
             }
 
-            // TODO: implement append
             WriteBooks(outputFormat, data.Item1, data.Item2, append);
         }
 
@@ -600,7 +569,7 @@ namespace AmazonBookReleaseTracker
                 case OutputFormat.csv:
                     WriteBooksCsv(amazonSeries, amazonBooks, append);
                     break;
-                case OutputFormat.icalendar:
+                case OutputFormat.calendar:
                     WriteBooksIcs(amazonSeries, amazonBooks, append);
                     break;
                 default:
@@ -635,12 +604,15 @@ namespace AmazonBookReleaseTracker
 
             using (var writer = new StreamWriter(
                 _settings.GetExportPath("csv"),
-                append: false))
+                append: append))
             using (var csv = new CsvWriter(writer, _csvConfig))
             {
                 csv.Context.RegisterClassMap<AmazonBookMap>();
 
-                csv.WriteHeader<AmazonBook>();
+                if (!append)
+                {
+                    csv.WriteHeader<AmazonBook>();
+                }
                 csv.NextRecord();
 
                 foreach (var series in amazonSeries)
@@ -657,25 +629,49 @@ namespace AmazonBookReleaseTracker
             bool append)
         {
             Log.Information("Writing iCalendar file.");
-            
+
             var cal = new Ical.Net.Calendar();
-            cal.AddTimeZone(new VTimeZone(_settings.TimeZoneTZ));
-            cal.Scale = CalendarScales.Gregorian;
+            string calString = "";
+
+            if (append)
+            {
+                calString = File.ReadAllText(_settings.GetExportPath("ics"));
+                cal = Ical.Net.Calendar.Load(calString);
+            }
+            else
+            {
+                cal.AddTimeZone(new VTimeZone(_settings.TimeZoneTZ));
+                cal.Scale = CalendarScales.Gregorian;
+            }
 
             foreach (var series in amazonSeries)
             {
                 foreach (var book in series.Books)
                 {
+                    int index = cal.Events.GetIndexOfUid(book.GetGuid().ToString("D"));
+
+                    if (index != -1)
+                    {
+                        cal.Events.Remove(cal.Events[index]);
+                    }
+
                     cal.Events.Add(book.GetCalendarEvent(series.Title, _settings.IcsCategories));
                 }
             }
 
             foreach (var book in amazonBooks)
             {
-                cal.Events.Add(book.GetCalendarEvent(_settings.IcsCategories));
+                int index = cal.Events.GetIndexOfUid(book.GetGuid().ToString("D"));
+
+                if (index != -1)
+                {
+                    cal.Events.Remove(cal.Events[index]);
+                }
+
+                cal.Events.Add(book.GetCalendarEvent(book.Title, _settings.IcsCategories));
             }
-            
-            string calString = "";
+
+            calString = "";
             var serializer = new CalendarSerializer();
 
             using (var writer = new StreamWriter(
@@ -685,8 +681,6 @@ namespace AmazonBookReleaseTracker
                 calString = serializer.SerializeToString(cal);
                 writer.Write(calString);
             }
-
-            var ical = Ical.Net.Calendar.Load(calString);
         }
 
         private void ImportSettings()
@@ -786,6 +780,6 @@ namespace AmazonBookReleaseTracker
     {
         console,
         csv,
-        icalendar,
+        calendar,
     }
 }

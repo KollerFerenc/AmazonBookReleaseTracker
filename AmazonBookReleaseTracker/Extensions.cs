@@ -52,5 +52,30 @@ namespace AmazonBookReleaseTracker
 
             return outpout;
         }
+
+        public static int GetIndexOfUid(this Ical.Net.Proxies.IUniqueComponentList<CalendarEvent> events, string uid)
+        {
+            int i = 0;
+            bool found = false;
+
+            while (i < events.Count && !found)
+            {
+                if (events[i].Uid == uid)
+                {
+                    found = true;
+                }
+
+                i++;
+            }
+
+            if (found)
+            {
+                return (i - 1);
+            }
+            else
+            {
+                return -1;
+            }
+        }
     }
 }
