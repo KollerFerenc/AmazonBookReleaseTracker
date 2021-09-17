@@ -91,16 +91,28 @@ namespace AmazonBookReleaseTracker
         [Command(
             Name = "showConfig",
             Description = "Show current config.")]
-        public void ShowConfig()
+        public void ShowConfig(
+            [Option(
+                LongName = "path",
+                Description="Show config path.",
+                BooleanMode=BooleanMode.Implicit)]
+            bool path)
         {
             if (!_settingsImported)
             {
                 ImportSettings();
             }
 
-            Log.Debug("Writing config to console.");
-            Console.WriteLine(JsonSerializer.Serialize(
-                AmazonBookReleaseTrackerSettings.GetSettings(_settings), _jsonSerializerOptions));
+            if (path)
+            {
+                Log.Information(_pathToConfig);
+            }
+            else
+            {
+                Log.Debug("Writing config to console.");
+                Console.WriteLine(JsonSerializer.Serialize(
+                    AmazonBookReleaseTrackerSettings.GetSettings(_settings), _jsonSerializerOptions));
+            }
         }
 
         [Command(
