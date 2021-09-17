@@ -55,17 +55,4 @@ namespace AmazonBookReleaseTracker
             Environment.Exit((int)exitCode);
         }
     }
-
-    public enum ExitCode
-    {
-        Default = 0,
-        ConfigNotFound = -1,
-        ConfigLoadError = -2,
-        ValidationError = -3,
-        ConfigExists = -4,
-        NoIdFound = -5,
-        NoProductType = -6,
-        DataFileNotFound = -7,
-        DataFileLoadError = -8,
-    }
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace AmazonBookReleaseTracker
@@ -11,6 +12,8 @@ namespace AmazonBookReleaseTracker
     [Validator(typeof(AmazonLinkValidator))]
     public class AmazonLink : IArgumentModel, IEquatable<AmazonLink>
     {
+        private static readonly Regex _regex = new (@"(com\/([^/\\])+\/)(dp\/)(B\d{2}\w{7})|(B\d{9}(X|\d))");
+
         private AmazonId _amazonId;
         private AmazonProductType _productType = (AmazonProductType)(-1);
 
@@ -36,11 +39,15 @@ namespace AmazonBookReleaseTracker
         {
             if (!Enum.IsDefined(_productType))
             {
-                if (Link.Contains("/dp/"))
+                if (Link.Contains("com/dp/"))
                 {
                     _productType = AmazonProductType.Series;
                 }
-                else if (Link.Contains("/gp/product/"))
+                else if (Link.Contains("com/gp/product/"))
+                {
+                    _productType = AmazonProductType.Book;
+                }
+                else if (_regex.IsMatch(Link))
                 {
                     _productType = AmazonProductType.Book;
                 }
@@ -72,13 +79,13 @@ namespace AmazonBookReleaseTracker
                     {
                         SimplifyLink();
 
-                        string asin = Link[^10..];
-
-                        if (AmazonId.IsValid(asin))
+                        if (AmazonId.TryGetAmazonId(Link,out amazonId))
                         {
-                            _amazonId = new AmazonId(asin);
-                            amazonId = _amazonId;
-                            return true;
+                            if (amazonId.IsValid())
+                            {
+                                _amazonId = new AmazonId(amazonId.Asin);
+                                return true;
+                            }
                         }
                     }
                 }

@@ -12,7 +12,8 @@ namespace AmazonBookReleaseTracker
     [Validator(typeof(AmazonIdValidator))]
     public class AmazonId : IArgumentModel, IEquatable<AmazonId>
     {
-        private static readonly Regex _regex = new("^B\\d{2}\\w{7}|\\d{9}(X|\\d)$");
+        private static readonly Regex _regexValidation = new("(^B\\d{2}\\w{7})|(^B\\d{9}(X|\\d))$");
+        private static readonly Regex _regexFind = new("(B\\d{2}\\w{7})|(B\\d{9}(X|\\d))$");
 
         private string _asin = string.Empty;
         private Guid _guid = Guid.ParseExact(Utilities.CreateMD5(string.Empty), "N");
@@ -95,7 +96,21 @@ namespace AmazonBookReleaseTracker
                 return false;
             }
 
-            return _regex.IsMatch(asin);
+            return _regexValidation.IsMatch(asin);
+        }
+
+        public static bool TryGetAmazonId(string input, out AmazonId amazonId)
+        {
+            amazonId = new AmazonId();
+
+            if (_regexFind.IsMatch(input))
+            {
+                string asin = _regexFind.Match(input).Value;
+                amazonId = new AmazonId(asin);
+                return true;
+            }
+
+            return false;
         }
 
         public static bool operator ==(AmazonId amazonId1, AmazonId amazonId2)
@@ -112,12 +127,5 @@ namespace AmazonBookReleaseTracker
         {
             return !(amazonId1 == amazonId2);
         }
-    }
-
-    public enum AmazonProductType
-    {
-        Unknown,
-        Book,
-        Series,
     }
 }
