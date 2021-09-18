@@ -25,4 +25,11 @@ namespace AmazonBookReleaseTracker
         Book,
         Series,
     }
+
+    public enum OutputFormat
+    {
+        console,
+        csv,
+        calendar,
+    }
 }
