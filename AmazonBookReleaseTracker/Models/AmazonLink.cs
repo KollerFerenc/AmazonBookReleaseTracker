@@ -12,7 +12,8 @@ namespace AmazonBookReleaseTracker
     [Validator(typeof(AmazonLinkValidator))]
     public class AmazonLink : IArgumentModel, IEquatable<AmazonLink>
     {
-        private static readonly Regex _regex = new (@"(com\/([^/\\])+\/)(dp\/)(B\d{2}\w{7})|(B\d{9}(X|\d))");
+        private static readonly Regex _regex = new (@"(com\/([^/\\])+\/)(dp\/)(B\d{2}\w{7})|(B\d{9}(X|\d))",
+            RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
 
         private AmazonId _amazonId;
         private AmazonProductType _productType = (AmazonProductType)(-1);
@@ -146,9 +147,9 @@ namespace AmazonBookReleaseTracker
 
         public static bool IsValidUri(string uriName)
         {
-            Uri uriResult;
-            return Uri.TryCreate(uriName, UriKind.Absolute, out uriResult)
-                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+            return Uri.TryCreate(uriName, UriKind.Absolute, out Uri uriResult)
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps)
+                && uriResult.Host.Contains("amazon");
         }
     }
 }

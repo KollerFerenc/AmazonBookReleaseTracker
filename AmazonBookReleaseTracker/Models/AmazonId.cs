@@ -12,8 +12,10 @@ namespace AmazonBookReleaseTracker
     [Validator(typeof(AmazonIdValidator))]
     public class AmazonId : IArgumentModel, IEquatable<AmazonId>
     {
-        private static readonly Regex _regexValidation = new("(^B\\d{2}\\w{7})|(^B\\d{9}(X|\\d))$");
-        private static readonly Regex _regexFind = new("(B\\d{2}\\w{7})|(B\\d{9}(X|\\d))$");
+        private static readonly Regex _regexValidation = new("(^B\\d{2}\\w{7})|(^B\\d{9}(X|\\d))$",
+            RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
+        private static readonly Regex _regexFind = new("(B\\d{2}\\w{7})|(B\\d{9}(X|\\d))$",
+            RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
 
         private string _asin = string.Empty;
         private Guid _guid = Guid.ParseExact(Utilities.CreateMD5(string.Empty), "N");
