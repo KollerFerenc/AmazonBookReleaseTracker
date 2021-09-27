@@ -123,5 +123,10 @@ namespace AmazonBookReleaseTracker
                 return -1;
             }
         }
+
+        public static bool IsBetween(this DateTime dateTime, DateTime start, DateTime end)
+        {
+            return ((dateTime >= start) && (dateTime <= end));
+        }
     }
 }
