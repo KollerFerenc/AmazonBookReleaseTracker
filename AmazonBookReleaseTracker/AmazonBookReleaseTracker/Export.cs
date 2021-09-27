@@ -38,7 +38,7 @@ namespace AmazonBookReleaseTracker
             var data = GetData(newOnly);
 
             Log.Information("Release dates:");
-            foreach (var series in data.Item1)
+            foreach (var series in data.AmazonSeries)
             {
                 Log.Information($"-{ series.Title }");
                 foreach (var book in series.Books)
@@ -47,7 +47,7 @@ namespace AmazonBookReleaseTracker
                 }
             }
 
-            foreach (var book in data.Item2)
+            foreach (var book in data.AmazonBooks)
             {
                 Log.Information($"-{ book.Title }: { book.ReleaseDate.ToString("d") }");
             }
@@ -89,12 +89,12 @@ namespace AmazonBookReleaseTracker
                 }
                 csv.NextRecord();
 
-                foreach (var series in data.Item1)
+                foreach (var series in data.AmazonSeries)
                 {
                     csv.WriteRecords(series.Books);
                 }
 
-                csv.WriteRecords(data.Item2);
+                csv.WriteRecords(data.AmazonBooks);
             }
         }
 
@@ -135,7 +135,7 @@ namespace AmazonBookReleaseTracker
                 cal.Scale = CalendarScales.Gregorian;
             }
 
-            foreach (var series in data.Item1)
+            foreach (var series in data.AmazonSeries)
             {
                 foreach (var book in series.Books)
                 {
@@ -150,7 +150,7 @@ namespace AmazonBookReleaseTracker
                 }
             }
 
-            foreach (var book in data.Item2)
+            foreach (var book in data.AmazonBooks)
             {
                 int index = cal.Events.GetIndexOfUid(book.GetGuid().ToString("D"));
 
@@ -174,7 +174,7 @@ namespace AmazonBookReleaseTracker
             }
         }
 
-        private Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>> GetData(bool newOnly)
+        private AmazonContainer GetData(bool newOnly)
         {
             if (!File.Exists(Utilities.pathToDataNew))
             {
@@ -191,7 +191,7 @@ namespace AmazonBookReleaseTracker
             }
 
             var analyzer = new TrackingDataAnalyzer(oldData, newData);
-            Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>> data;
+            AmazonContainer data;
 
             if (newOnly)
             {

@@ -8,22 +8,21 @@ using System.Threading.Tasks;
 
 namespace AmazonBookReleaseTracker
 {
-    public class TrackingData
+    public class TrackingData : AmazonContainer
     {
         public DateTime LastRun { get; set; } = DateTime.MinValue;
-        public List<AmazonSeries> AmazonSeries { get; set; } = new();
-        public List<AmazonBook> AmazonBooks { get; set; } = new();
 
         [JsonIgnore]
         public bool IsEmpty => LastRun == DateTime.MinValue;
-        public TrackingData()
+
+        public TrackingData() : base()
         {
 
         }
 
         public TrackingData(
             IEnumerable<AmazonSeries> amazonSeries,
-            IEnumerable<AmazonBook> amazonBooks)
+            IEnumerable<AmazonBook> amazonBooks) : base(amazonSeries, amazonBooks)
         {
             LastRun = DateTime.Now;
         }
@@ -31,11 +30,9 @@ namespace AmazonBookReleaseTracker
         public TrackingData(
             DateTime lastRun,
             IEnumerable<AmazonSeries> amazonSeries,
-            IEnumerable<AmazonBook> amazonBooks) : this(amazonSeries, amazonBooks)
+            IEnumerable<AmazonBook> amazonBooks) : base(amazonSeries, amazonBooks)
         {
             LastRun = lastRun;
-            AmazonSeries = new(amazonSeries);
-            AmazonBooks = new(amazonBooks);
         }
     }
 }

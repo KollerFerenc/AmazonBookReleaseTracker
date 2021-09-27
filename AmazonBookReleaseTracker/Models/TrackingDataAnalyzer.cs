@@ -17,44 +17,37 @@ namespace AmazonBookReleaseTracker
             _newData = newData;
         }
 
-        public Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>> GetAll()
+        public AmazonContainer GetAll()
         {
             if (_oldData.IsEmpty && _newData.IsEmpty)
             {
-                return new Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>>(
-                    Array.Empty<AmazonSeries>(), Array.Empty<AmazonBook>());
+                return new AmazonContainer();
             }
             else if (_newData.IsEmpty)
             {
-                return new Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>>(
-                    _oldData.AmazonSeries, _oldData.AmazonBooks);
+                return new AmazonContainer(_oldData.AmazonSeries, _oldData.AmazonBooks);
             }
             else if (_oldData.IsEmpty)
             {
-                return new Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>>(
-                    _newData.AmazonSeries, _newData.AmazonBooks);
+                return new AmazonContainer(_newData.AmazonSeries, _newData.AmazonBooks);
             }
 
-            return new Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>>(
-                    _newData.AmazonSeries, _newData.AmazonBooks);
+            return new AmazonContainer(_newData.AmazonSeries, _newData.AmazonBooks);
         }
 
-        public Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>> GetNew()
+        public AmazonContainer GetNew()
         {
             if (_oldData.IsEmpty && _newData.IsEmpty)
             {
-                return new Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>>(
-                    Array.Empty<AmazonSeries>(), Array.Empty<AmazonBook>());
+                return new AmazonContainer();
             }
             else if (_newData.IsEmpty)
             {
-                return new Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>>(
-                    _oldData.AmazonSeries, _oldData.AmazonBooks);
+                return new AmazonContainer(_oldData.AmazonSeries, _oldData.AmazonBooks);
             }
             else if (_oldData.IsEmpty)
             {
-                return new Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>>(
-                    _newData.AmazonSeries, _newData.AmazonBooks);
+                return new AmazonContainer(_newData.AmazonSeries, _newData.AmazonBooks);
             }
 
             var amazonSeries = new List<AmazonSeries>();
@@ -87,8 +80,7 @@ namespace AmazonBookReleaseTracker
 
             amazonBooks.AddRange(_newData.AmazonBooks.Except(_oldData.AmazonBooks));
 
-            return new Tuple<IEnumerable<AmazonSeries>, IEnumerable<AmazonBook>>(
-                    amazonSeries, amazonBooks);
+            return new AmazonContainer(amazonSeries, amazonBooks);
         }
     }
 }
