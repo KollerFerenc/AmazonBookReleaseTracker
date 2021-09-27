@@ -18,7 +18,7 @@ namespace AmazonBookReleaseTracker
     {
         internal static readonly string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             ConfigureLogger();
             
@@ -26,9 +26,10 @@ namespace AmazonBookReleaseTracker
                 .UseDefaultMiddleware()
                 .UseFluentValidation(showHelpOnError: true);
 
-            appRunner.Run(args);
+            int exit = appRunner.Run(args);
 
-            Exit(ExitCode.Default);
+            Log.CloseAndFlush();
+            return exit;
         }
 
         private static void ConfigureLogger()
@@ -49,10 +50,10 @@ namespace AmazonBookReleaseTracker
                 .CreateLogger();
         }
 
-        internal static void Exit(ExitCode exitCode)
-        {
-            Log.CloseAndFlush();
-            Environment.Exit((int)exitCode);
-        }
+        //internal static void Exit(ExitCode exitCode)
+        //{
+        //    Log.CloseAndFlush();
+        //    Environment.Exit((int)exitCode);
+        //}
     }
 }

@@ -18,11 +18,15 @@ namespace AmazonBookReleaseTracker
         [Command(
             Name = "add",
             Description = "Add id from amazon link.")]
-        public void AddLink(AmazonLink amazonLink)
+        public int AddLink(AmazonLink amazonLink)
         {
             if (!Config.SettingsImported)
             {
-                Config.ImportSettings();
+                var result = Config.ImportSettings();
+                if (result != ExitCode.Default)
+                {
+                    return (int)result;
+                }
             }
 
             if (amazonLink.TryGetAmazonId(out AmazonId amazonId))
@@ -55,29 +59,33 @@ namespace AmazonBookReleaseTracker
                         break;
                     case AmazonProductType.Unknown:
                         Log.Error("Could not determine product type.");
-                        Program.Exit(ExitCode.NoProductType);
-                        break;
+                        return (int)ExitCode.NoProductType;
                     default:
                         Log.Error("Could not determine product type.");
-                        Program.Exit(ExitCode.NoProductType);
-                        break;
+                        return (int)ExitCode.NoProductType;
                 }
             }
             else
             {
                 Log.Error("Could not find id.");
-                Program.Exit(ExitCode.NoIdFound);
+                return (int)ExitCode.NoIdFound;
             }
+
+            return (int)ExitCode.Default;
         }
 
         [Command(
             Name = "remove",
             Description = "Remove tracking from link.")]
-        public void RemoveLink(AmazonLink amazonLink)
+        public int RemoveLink(AmazonLink amazonLink)
         {
             if (!Config.SettingsImported)
             {
-                Config.ImportSettings();
+                var result = Config.ImportSettings();
+                if (result != ExitCode.Default)
+                {
+                    return (int)result;
+                }
             }
 
             if (amazonLink.TryGetAmazonId(out AmazonId amazonId))
@@ -108,25 +116,25 @@ namespace AmazonBookReleaseTracker
                         break;
                     case AmazonProductType.Unknown:
                         Log.Error("Could not determine product type.");
-                        Program.Exit(ExitCode.NoProductType);
-                        break;
+                        return (int)ExitCode.NoProductType;
                     default:
                         Log.Error("Could not determine product type.");
-                        Program.Exit(ExitCode.NoProductType);
-                        break;
+                        return (int)ExitCode.NoProductType;
                 }
             }
             else
             {
                 Log.Error("Could not find id.");
-                Program.Exit(ExitCode.NoIdFound);
+                return (int)ExitCode.NoIdFound;
             }
+
+            return (int)ExitCode.Default;
         }
 
         [Command(
             Name = "ignore",
             Description = "Ignore this id.")]
-        public void IgnoreLink(
+        public int IgnoreLink(
             AmazonLink amazonLink,
             [Option(
                 LongName = "remove",
@@ -137,7 +145,11 @@ namespace AmazonBookReleaseTracker
         {
             if (!Config.SettingsImported)
             {
-                Config.ImportSettings();
+                var result = Config.ImportSettings();
+                if (result != ExitCode.Default)
+                {
+                    return (int)result;
+                }
             }
 
             if (amazonLink.TryGetAmazonId(out AmazonId amazonId))
@@ -171,18 +183,24 @@ namespace AmazonBookReleaseTracker
             else
             {
                 Log.Error("Could not find id.");
-                Program.Exit(ExitCode.NoIdFound);
+                return (int)ExitCode.NoIdFound;
             }
+
+            return (int)ExitCode.Default;
         }
 
         [Command(
             Name = "run",
             Description = "Run tracking.")]
-        public async Task Run()
+        public async Task<int> Run()
         {
             if (!Config.SettingsImported)
             {
-                Config.ImportSettings();
+                var result = Config.ImportSettings();
+                if (result != ExitCode.Default)
+                {
+                    return (int)result;
+                }
             }
 
             var dateNow = DateTime.Now;
@@ -318,6 +336,8 @@ namespace AmazonBookReleaseTracker
                 string json = JsonSerializer.Serialize(trackingData, Utilities.jsonSerializerOptions);
                 writer.Write(json);
             }
+
+            return (int)ExitCode.Default;
         }
     }
 }

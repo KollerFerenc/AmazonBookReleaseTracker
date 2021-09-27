@@ -21,7 +21,7 @@ namespace AmazonBookReleaseTracker
         [Command(
             Name = "init",
             Description = "Initialize config.")]
-        public void Init(
+        public int Init(
             [Option(
                 LongName = "force",
                 ShortName = "f",
@@ -36,7 +36,7 @@ namespace AmazonBookReleaseTracker
                 if (!force)
                 {
                     Log.Fatal("Config already exists.");
-                    Program.Exit(ExitCode.ConfigExists);
+                    return (int)ExitCode.ConfigExists;
                 }
             }
 
@@ -60,12 +60,13 @@ namespace AmazonBookReleaseTracker
 
             SettingsImported = true;
             SaveConfig();
+            return (int)ExitCode.Default;
         }
 
         [Command(
             Name = "show",
             Description = "Show current config.")]
-        public void ShowConfig(
+        public int ShowConfig(
             [Option(
                 LongName = "path",
                 Description="Show config path.",
@@ -74,7 +75,11 @@ namespace AmazonBookReleaseTracker
         {
             if (!SettingsImported)
             {
-                ImportSettings();
+                var result = ImportSettings();
+                if (result != ExitCode.Default)
+                {
+                    return (int)result;
+                }
             }
 
             if (path)
@@ -87,12 +92,14 @@ namespace AmazonBookReleaseTracker
                 Console.WriteLine(JsonSerializer.Serialize(
                     AmazonBookReleaseTrackerSettings.GetSettings(Settings), Utilities.jsonSerializerOptions));
             }
+
+            return (int)ExitCode.Default;
         }
 
         [Command(
             Name = "removeDuplicates",
             Description = "Remove duplicate ASINs from config.")]
-        public void RemoveDuplicates(
+        public int RemoveDuplicates(
             [Option(
                 LongName = "dryRun",
                 Description= "Dry run.",
@@ -101,7 +108,11 @@ namespace AmazonBookReleaseTracker
         {
             if (!SettingsImported)
             {
-                ImportSettings();
+                var result = ImportSettings();
+                if (result != ExitCode.Default)
+                {
+                    return (int)result;
+                }
             }
 
             var distinct = Settings.IgnoredIds.Distinct().ToList();
@@ -181,6 +192,8 @@ namespace AmazonBookReleaseTracker
                     Log.Information("No duplicate TrackedBookIds found.");
                 }
             }
+
+            return (int)ExitCode.Default;
         }
 
         internal void SaveConfig()
@@ -194,12 +207,12 @@ namespace AmazonBookReleaseTracker
             }
         }
 
-        internal void ImportSettings()
+        internal ExitCode ImportSettings()
         {
             if (!File.Exists(Utilities.pathToConfig))
             {
                 Log.Fatal("config.json not found.");
-                Program.Exit(ExitCode.ConfigNotFound);
+                return ExitCode.ConfigNotFound;
             }
 
             Log.Debug("Loading config.json.");
@@ -220,7 +233,7 @@ namespace AmazonBookReleaseTracker
                             Log.Fatal($"{ error.ErrorMessage }\nProperty: { error.PropertyName}, Value: { error.AttemptedValue }");
                         }
 
-                        Program.Exit(ExitCode.ValidationError);
+                        return ExitCode.ValidationError;
                     }
 
                     Settings = settings;
@@ -228,11 +241,12 @@ namespace AmazonBookReleaseTracker
                 catch (Exception)
                 {
                     Log.Fatal("Could not load config.json.");
-                    Program.Exit(ExitCode.ConfigLoadError);
+                    return ExitCode.ConfigLoadError;
                 }
             }
 
             SettingsImported = true;
+            return ExitCode.Default;
         }
     }
 }

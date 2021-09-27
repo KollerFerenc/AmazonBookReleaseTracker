@@ -24,7 +24,7 @@ namespace AmazonBookReleaseTracker
         [Command(
             Name = "console",
             Description = "Export tracked items to the console.")]
-        public void ExportConsole([Option(
+        public int ExportConsole([Option(
                 LongName = "newOnly",
                 Description = "Export only new items.",
                 BooleanMode = BooleanMode.Implicit)]
@@ -32,7 +32,11 @@ namespace AmazonBookReleaseTracker
         {
             if (!Config.SettingsImported)
             {
-                Config.ImportSettings();
+                var result = Config.ImportSettings();
+                if (result != ExitCode.Default)
+                {
+                    return (int)result;
+                }
             }
 
             var data = GetData(newOnly);
@@ -51,12 +55,14 @@ namespace AmazonBookReleaseTracker
             {
                 Console.WriteLine($"-{ book.Title }: { book.ReleaseDate.ToString("d") }");
             }
+
+            return (int)ExitCode.Default;
         }
 
         [Command(
             Name = "csv",
             Description = "Export tracked items to CSV file.")]
-        public void ExportCsv([Option(
+        public int ExportCsv([Option(
                 LongName = "newOnly",
                 Description = "Export only new items.",
                 BooleanMode = BooleanMode.Implicit)]
@@ -69,7 +75,11 @@ namespace AmazonBookReleaseTracker
         {
             if (!Config.SettingsImported)
             {
-                Config.ImportSettings();
+                var result = Config.ImportSettings();
+                if (result != ExitCode.Default)
+                {
+                    return (int)result;
+                }
             }
 
             var data = GetData(newOnly);
@@ -96,12 +106,14 @@ namespace AmazonBookReleaseTracker
 
                 csv.WriteRecords(data.AmazonBooks);
             }
+
+            return (int)ExitCode.Default;
         }
 
         [Command(
             Name = "calendar",
             Description = "Export tracked items to calendar file.")]
-        public void ExportCalendar([Option(
+        public int ExportCalendar([Option(
                 LongName = "newOnly",
                 Description = "Export only new items.",
                 BooleanMode = BooleanMode.Implicit)]
@@ -114,7 +126,11 @@ namespace AmazonBookReleaseTracker
         {
             if (!Config.SettingsImported)
             {
-                Config.ImportSettings();
+                var result = Config.ImportSettings();
+                if (result != ExitCode.Default)
+                {
+                    return (int)result;
+                }
             }
 
             var data = GetData(newOnly);
@@ -155,6 +171,8 @@ namespace AmazonBookReleaseTracker
                 calString = serializer.SerializeToString(cal);
                 writer.Write(calString);
             }
+
+            return (int)ExitCode.Default;
         }
 
         public AmazonContainer GetData(bool newOnly)
@@ -167,7 +185,7 @@ namespace AmazonBookReleaseTracker
             if (!File.Exists(Utilities.pathToDataNew))
             {
                 Log.Fatal("No data file found.");
-                Program.Exit(ExitCode.DataFileNotFound);
+                return new AmazonContainer();
             }
 
             var newData = ImportTrackingData(Utilities.pathToDataNew);
@@ -193,12 +211,12 @@ namespace AmazonBookReleaseTracker
             return data;
         }
 
-        private TrackingData ImportTrackingData(string pathToData)
+        private static TrackingData ImportTrackingData(string pathToData)
         {
             if (!File.Exists(pathToData))
             {
                 Log.Fatal("Tracking data not found.");
-                Program.Exit(ExitCode.DataFileNotFound);
+                return new TrackingData();
             }
 
             var trackingData = new TrackingData();
@@ -213,7 +231,7 @@ namespace AmazonBookReleaseTracker
                 catch (Exception)
                 {
                     Log.Fatal("Could not load tracking data.");
-                    Program.Exit(ExitCode.DataFileLoadError);
+                    return new TrackingData();
                 }
             }
 
