@@ -11,6 +11,39 @@ namespace AmazonBookReleaseTracker
 {
     public static class Extensions
     {
+        public static void Add(this Ical.Net.Proxies.IUniqueComponentList<CalendarEvent> events, 
+            AmazonSeries amazonSeries)
+        {
+            Add(events, amazonSeries, Array.Empty<string>());
+        }
+
+        public static void Add(this Ical.Net.Proxies.IUniqueComponentList<CalendarEvent> events,
+            AmazonSeries amazonSeries,
+            IList<string> categories)
+        {
+            foreach (var book in amazonSeries.Books)
+            {
+                events.RemoveExisting(book.GetGuid().ToString("D"));
+
+                events.Add(book.GetCalendarEvent(amazonSeries.Title, categories));
+            }
+        }
+
+        public static void Add(this Ical.Net.Proxies.IUniqueComponentList<CalendarEvent> events,
+            AmazonBook amazonBook)
+        {
+            Add(events, amazonBook, Array.Empty<string>());
+        }
+
+        public static void Add(this Ical.Net.Proxies.IUniqueComponentList<CalendarEvent> events,
+            AmazonBook amazonBook,
+            IList<string> categories)
+        {
+            events.RemoveExisting(amazonBook.GetGuid().ToString("D"));
+
+            events.Add(amazonBook.GetCalendarEvent(amazonBook.Title, categories));
+        }
+
         public static CalendarEvent GetCalendarEvent(
             this AmazonBook amazonBook)
         {
@@ -51,6 +84,19 @@ namespace AmazonBookReleaseTracker
             };
 
             return outpout;
+        }
+
+        public static bool RemoveExisting(this Ical.Net.Proxies.IUniqueComponentList<CalendarEvent> events, string uid)
+        {
+            int index = events.GetIndexOfUid(uid);
+
+            if (index != -1)
+            {
+                events.Remove(events[index]);
+                return true;
+            }
+
+            return false;
         }
 
         public static int GetIndexOfUid(this Ical.Net.Proxies.IUniqueComponentList<CalendarEvent> events, string uid)

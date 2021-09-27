@@ -37,19 +37,19 @@ namespace AmazonBookReleaseTracker
 
             var data = GetData(newOnly);
 
-            Log.Information("Release dates:");
+            Console.WriteLine("Release dates:");
             foreach (var series in data.AmazonSeries)
             {
-                Log.Information($"-{ series.Title }");
+                Console.WriteLine($"-{ series.Title }");
                 foreach (var book in series.Books)
                 {
-                    Log.Information($" -{ book.Title }: { book.ReleaseDate.ToString("d") }");
+                    Console.WriteLine($" -{ book.Title }: { book.ReleaseDate.ToString("d") }");
                 }
             }
 
             foreach (var book in data.AmazonBooks)
             {
-                Log.Information($"-{ book.Title }: { book.ReleaseDate.ToString("d") }");
+                Console.WriteLine($"-{ book.Title }: { book.ReleaseDate.ToString("d") }");
             }
         }
 
@@ -137,29 +137,12 @@ namespace AmazonBookReleaseTracker
 
             foreach (var series in data.AmazonSeries)
             {
-                foreach (var book in series.Books)
-                {
-                    int index = cal.Events.GetIndexOfUid(book.GetGuid().ToString("D"));
-
-                    if (index != -1)
-                    {
-                        cal.Events.Remove(cal.Events[index]);
-                    }
-
-                    cal.Events.Add(book.GetCalendarEvent(series.Title, Config.Settings.IcsCategories));
-                }
+                cal.Events.Add(series, Config.Settings.IcsCategories);
             }
 
             foreach (var book in data.AmazonBooks)
             {
-                int index = cal.Events.GetIndexOfUid(book.GetGuid().ToString("D"));
-
-                if (index != -1)
-                {
-                    cal.Events.Remove(cal.Events[index]);
-                }
-
-                cal.Events.Add(book.GetCalendarEvent(book.Title, Config.Settings.IcsCategories));
+                cal.Events.Add(book, Config.Settings.IcsCategories);
             }
 
             calString = "";
@@ -174,8 +157,13 @@ namespace AmazonBookReleaseTracker
             }
         }
 
-        private AmazonContainer GetData(bool newOnly)
+        public AmazonContainer GetData(bool newOnly)
         {
+            if (!Config.SettingsImported)
+            {
+                Config.ImportSettings();
+            }
+
             if (!File.Exists(Utilities.pathToDataNew))
             {
                 Log.Fatal("No data file found.");
