@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace AmazonBookReleaseTracker
@@ -10,6 +11,9 @@ namespace AmazonBookReleaseTracker
     {
         public List<AmazonSeries> AmazonSeries { get; set; } = new();
         public List<AmazonBook> AmazonBooks { get; set; } = new();
+
+        [JsonIgnore]
+        public int BookCount => AmazonSeries.Sum(s => s.Books.Count) + AmazonBooks.Count;
 
         public AmazonContainer()
         {

@@ -49,11 +49,5 @@ namespace AmazonBookReleaseTracker
                     outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
         }
-
-        //internal static void Exit(ExitCode exitCode)
-        //{
-        //    Log.CloseAndFlush();
-        //    Environment.Exit((int)exitCode);
-        //}
     }
 }

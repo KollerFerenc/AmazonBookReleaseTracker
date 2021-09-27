@@ -9,6 +9,7 @@ namespace AmazonBookReleaseTrackerTray
 {
     static class Program
     {
+        internal static readonly string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         public static Mutex mutex = new Mutex(true, "AmazonBookReleaseTracker - Tray");
 
         /// <summary>
