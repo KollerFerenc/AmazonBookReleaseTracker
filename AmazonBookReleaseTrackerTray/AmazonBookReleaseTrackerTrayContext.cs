@@ -95,7 +95,15 @@ namespace AmazonBookReleaseTrackerTray
                     }
                 };
 
-                tracker.Start();
+                try
+                {
+                    tracker.Start();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    throw;
+                }
                 tracker.WaitForExit();
 
                 if ((ExitCode)tracker.ExitCode == ExitCode.Default)

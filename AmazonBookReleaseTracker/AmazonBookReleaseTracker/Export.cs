@@ -44,10 +44,13 @@ namespace AmazonBookReleaseTracker
             Console.WriteLine("Release dates:");
             foreach (var series in data.AmazonSeries)
             {
-                Console.WriteLine($"-{ series.Title }");
-                foreach (var book in series.Books)
+                if (series.Books.Count > 0)
                 {
-                    Console.WriteLine($" -{ book.Title }: { book.ReleaseDate.ToString("d") }");
+                    Console.WriteLine($"-{ series.Title }");
+                    foreach (var book in series.Books)
+                    {
+                        Console.WriteLine($" -{ book.Title }: { book.ReleaseDate.ToString("d") }");
+                    }
                 }
             }
 
