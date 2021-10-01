@@ -24,11 +24,13 @@ namespace AmazonBookReleaseTrackerTray
         private void LoadSettings()
         {
             chboxAutoStart.Checked = Properties.Settings.Default.AutoStart;
+            numDays.Value = Properties.Settings.Default.NotifyWithin;
         }
 
         private void btnOk_Click(object sender, EventArgs e)
         {
             Properties.Settings.Default.AutoStart = chboxAutoStart.Checked;
+            Properties.Settings.Default.NotifyWithin = (int)numDays.Value;
 
             Properties.Settings.Default.Save();
 

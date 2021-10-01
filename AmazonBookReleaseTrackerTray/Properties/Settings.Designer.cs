@@ -34,5 +34,17 @@ namespace AmazonBookReleaseTrackerTray.Properties {
                 this["AutoStart"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("7")]
+        public int NotifyWithin {
+            get {
+                return ((int)(this["NotifyWithin"]));
+            }
+            set {
+                this["NotifyWithin"] = value;
+            }
+        }
     }
 }

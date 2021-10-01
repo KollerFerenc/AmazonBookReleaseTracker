@@ -18,7 +18,6 @@ namespace AmazonBookReleaseTrackerTray
         private NotifyIcon _trayIcon;
         private bool _running = false;
 
-        internal int Days { get; private set; } = 7;
         internal AmazonContainer AmazonContainer { get; private set; } = new AmazonContainer();
         internal static readonly Icon icon = new System.Drawing.Icon(File.Open(Path.Combine(Program.baseDirectory, "Assets\\books.ico"), FileMode.Open));
 
@@ -26,9 +25,10 @@ namespace AmazonBookReleaseTrackerTray
         {
             InitializeComponents();
 
+#if RELEASE
             CheckAutoStart();
-
             RunTracker();
+#endif
         }
 
         private void InitializeComponents()
@@ -40,7 +40,13 @@ namespace AmazonBookReleaseTrackerTray
                 Visible = true
             };
 
+            var tracker = new ToolStripMenuItem("Tracker");
+            tracker.DropDownItems.Add("Add", null, Add);
+            tracker.DropDownItems.Add("Remove", null, Remove);
+            tracker.DropDownItems.Add("Ignore", null, Ignore);
+
             _trayIcon.ContextMenuStrip.Items.Add("Run", null, Run);
+            _trayIcon.ContextMenuStrip.Items.Add(tracker);
             _trayIcon.ContextMenuStrip.Items.Add("Details", null, Details);
             _trayIcon.ContextMenuStrip.Items.Add("Settings", null, Settings);
             _trayIcon.ContextMenuStrip.Items.Add(new ToolStripSeparator());
@@ -108,8 +114,11 @@ namespace AmazonBookReleaseTrackerTray
 
                 if ((ExitCode)tracker.ExitCode == ExitCode.Default)
                 {
-                    AmazonContainer = new Export().GetData(newOnly: false).GetWithin(Days);
-                    SendToast($"{ AmazonContainer.BookCount } book(s) to be released within { Days } day(s).");
+                    AmazonContainer = new Export().GetData(newOnly: false).GetWithin(Properties.Settings.Default.NotifyWithin);
+                    if (AmazonContainer.BookCount > 0)
+                    {
+                        SendToast($"{ AmazonContainer.BookCount } book(s) to be released within { Properties.Settings.Default.NotifyWithin } day(s).");
+                    }
                 }
                 else
                 {
@@ -161,6 +170,27 @@ namespace AmazonBookReleaseTrackerTray
             DetailsForm detailsForm = new(AmazonContainer);
             detailsForm.ShowDialog();
             detailsForm.Dispose();
+        }
+
+        public void Add(object sender, EventArgs e)
+        {
+            AddForm addForm = new();
+            addForm.ShowDialog();
+            addForm.Dispose();
+        }
+
+        public void Remove(object sender, EventArgs e)
+        {
+            RemoveForm removeForm = new();
+            removeForm.ShowDialog();
+            removeForm.Dispose();
+        }
+
+        public void Ignore(object sender, EventArgs e)
+        {
+            IgnoreForm ignoreForm = new();
+            ignoreForm.ShowDialog();
+            ignoreForm.Dispose();
         }
 
         public void Exit(object sender, EventArgs e)

@@ -33,6 +33,9 @@ namespace AmazonBookReleaseTrackerTray
             this.btnOk = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnShowFolder = new System.Windows.Forms.Button();
+            this.numDays = new System.Windows.Forms.NumericUpDown();
+            this.lblNotifiyDays = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.numDays)).BeginInit();
             this.SuspendLayout();
             // 
             // chboxAutoStart
@@ -78,11 +81,30 @@ namespace AmazonBookReleaseTrackerTray
             this.btnShowFolder.UseVisualStyleBackColor = true;
             this.btnShowFolder.Click += new System.EventHandler(this.btnShowFolder_Click);
             // 
+            // numDays
+            // 
+            this.numDays.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numDays.Location = new System.Drawing.Point(135, 41);
+            this.numDays.Name = "numDays";
+            this.numDays.Size = new System.Drawing.Size(42, 23);
+            this.numDays.TabIndex = 4;
+            // 
+            // lblNotifiyDays
+            // 
+            this.lblNotifiyDays.AutoSize = true;
+            this.lblNotifiyDays.Location = new System.Drawing.Point(12, 43);
+            this.lblNotifiyDays.Name = "lblNotifiyDays";
+            this.lblNotifiyDays.Size = new System.Drawing.Size(109, 15);
+            this.lblNotifiyDays.TabIndex = 5;
+            this.lblNotifiyDays.Text = "Notifiy within days:";
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(234, 236);
+            this.Controls.Add(this.lblNotifiyDays);
+            this.Controls.Add(this.numDays);
             this.Controls.Add(this.btnShowFolder);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOk);
@@ -91,6 +113,7 @@ namespace AmazonBookReleaseTrackerTray
             this.Name = "SettingsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Settings";
+            ((System.ComponentModel.ISupportInitialize)(this.numDays)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -102,5 +125,7 @@ namespace AmazonBookReleaseTrackerTray
         private System.Windows.Forms.Button btnOk;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnShowFolder;
+        private System.Windows.Forms.NumericUpDown numDays;
+        private System.Windows.Forms.Label lblNotifiyDays;
     }
 }
