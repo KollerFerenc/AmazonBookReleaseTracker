@@ -44,6 +44,8 @@ namespace AmazonBookReleaseTrackerTray
             tracker.DropDownItems.Add("Add", null, Add);
             tracker.DropDownItems.Add("Remove", null, Remove);
             tracker.DropDownItems.Add("Ignore", null, Ignore);
+            tracker.DropDownItems.Add(new ToolStripSeparator());
+            tracker.DropDownItems.Add("Show tracked", null, ShowTracked);
 
             _trayIcon.ContextMenuStrip.Items.Add("Run", null, Run);
             _trayIcon.ContextMenuStrip.Items.Add(tracker);
@@ -191,6 +193,13 @@ namespace AmazonBookReleaseTrackerTray
             IgnoreForm ignoreForm = new();
             ignoreForm.ShowDialog();
             ignoreForm.Dispose();
+        }
+
+        public void ShowTracked(object sender, EventArgs e)
+        {
+            DetailsForm detailsForm = new(new Export().GetExportConsoleLines(newOnly: false));
+            detailsForm.ShowDialog();
+            detailsForm.Dispose();
         }
 
         public void Exit(object sender, EventArgs e)

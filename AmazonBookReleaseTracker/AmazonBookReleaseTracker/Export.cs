@@ -39,24 +39,9 @@ namespace AmazonBookReleaseTracker
                 }
             }
 
-            var data = GetData(newOnly);
-
-            Console.WriteLine("Release dates:");
-            foreach (var series in data.AmazonSeries)
+            foreach (var item in GetExportConsoleLines(newOnly))
             {
-                if (series.Books.Count > 0)
-                {
-                    Console.WriteLine($"-{ series.Title }");
-                    foreach (var book in series.Books)
-                    {
-                        Console.WriteLine($" -{ book.Title }: { book.ReleaseDate.ToString("d") }");
-                    }
-                }
-            }
-
-            foreach (var book in data.AmazonBooks)
-            {
-                Console.WriteLine($"-{ book.Title }: { book.ReleaseDate.ToString("d") }");
+                Console.WriteLine(item);
             }
 
             return (int)ExitCode.Default;
@@ -176,6 +161,37 @@ namespace AmazonBookReleaseTracker
             }
 
             return (int)ExitCode.Default;
+        }
+
+        public IEnumerable<string> GetExportConsoleLines(bool newOnly)
+        {
+            if (!Config.SettingsImported)
+            {
+                Config.ImportSettings();
+            }
+
+            var data = GetData(newOnly);
+            var lines = new List<string>(data.BookCount);
+
+            lines.Add($"Releases: { data.BookCount }");
+            foreach (var series in data.AmazonSeries)
+            {
+                if (series.Books.Count > 0)
+                {
+                    lines.Add($"- { series.Title } ({ series.Books.Count })");
+                    foreach (var book in series.Books)
+                    {
+                        lines.Add($"\t- { book.Title }: { book.ReleaseDate.ToString("d") }");
+                    }
+                }
+            }
+
+            foreach (var book in data.AmazonBooks)
+            {
+                lines.Add($"- { book.Title }: { book.ReleaseDate.ToString("d") }");
+            }
+
+            return lines;
         }
 
         public AmazonContainer GetData(bool newOnly)

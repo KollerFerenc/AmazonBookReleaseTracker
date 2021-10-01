@@ -35,23 +35,45 @@ namespace AmazonBookReleaseTrackerTray
             FillTextBox();
         }
 
+        public DetailsForm(IEnumerable<string> lines) : this()
+        {
+            this.Text = "Tracked releases";
+
+            FillTextBox(lines);
+        }
+
         private void FillTextBox()
         {
-            foreach (var series in AmazonContainer.AmazonSeries)
+            if (AmazonContainer.BookCount > 0)
             {
-                if (series.Books.Count > 0)
+                foreach (var series in AmazonContainer.AmazonSeries)
                 {
-                    richTextBox1.AppendText($"- { series.Title } ({ series.AmazonId.Asin }), { series.GetUri() }{ Environment.NewLine }");
-                    foreach (var book in series.Books)
+                    if (series.Books.Count > 0)
                     {
-                        richTextBox1.AppendText($"\t- { book.Title } ({ book.AmazonId.Asin }), { book.ReleaseDate.ToShortDateString() }, { book.GetUri() }{ Environment.NewLine }");
+                        richTextBox1.AppendText($"- { series.Title } ({series.Books.Count}), [{ series.AmazonId.Asin }], { series.GetUri() }{ Environment.NewLine }");
+                        foreach (var book in series.Books)
+                        {
+                            richTextBox1.AppendText($"\t- { book.Title } [{ book.AmazonId.Asin }], { book.ReleaseDate.ToShortDateString() }, { book.GetUri() }{ Environment.NewLine }");
+                        }
                     }
                 }
-            }
 
-            foreach (var book in AmazonContainer.AmazonBooks)
+                foreach (var book in AmazonContainer.AmazonBooks)
+                {
+                    richTextBox1.AppendText($"- { book.Title } [{ book.AmazonId.Asin }], { book.ReleaseDate.ToShortDateString() }, { book.GetUri() }{ Environment.NewLine }");
+                }
+            }
+            else
             {
-                richTextBox1.AppendText($"- { book.Title } ({ book.AmazonId.Asin }), { book.ReleaseDate.ToShortDateString() }, { book.GetUri() }{ Environment.NewLine }");
+                richTextBox1.AppendText($"No release within { Properties.Settings.Default.NotifyWithin } days.{ Environment.NewLine }");
+            }
+        }
+
+        private void FillTextBox(IEnumerable<string> lines)
+        {
+            foreach (var item in lines)
+            {
+                richTextBox1.AppendText(item + Environment.NewLine);
             }
         }
 
