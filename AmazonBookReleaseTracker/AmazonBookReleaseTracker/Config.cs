@@ -63,7 +63,7 @@ namespace AmazonBookReleaseTracker
             return (int)ExitCode.Default;
         }
 
-        [Command(
+        [DefaultMethod, Command(
             Name = "show",
             Description = "Show current config.")]
         public int ShowConfig(
@@ -96,110 +96,10 @@ namespace AmazonBookReleaseTracker
             return (int)ExitCode.Default;
         }
 
-        [Command(
-            Name = "removeDuplicates",
-            Description = "Remove duplicate ASINs from config.")]
-        public int RemoveDuplicates(
-            [Option(
-                LongName = "dryRun",
-                Description= "Dry run.",
-                BooleanMode=BooleanMode.Implicit)]
-            bool dryRun)
-        {
-            if (!SettingsImported)
-            {
-                var result = ImportSettings();
-                if (result != ExitCode.Default)
-                {
-                    return (int)result;
-                }
-            }
-
-            var distinct = Settings.IgnoredIds.Distinct().ToList();
-            if (Settings.IgnoredIds.Count - distinct.Count > 0)
-            {
-                if (dryRun)
-                {
-                    Log.Information($"[DRY] Removing { Settings.IgnoredIds.Count - distinct.Count } duplicate IgnoreIds.");
-                }
-                else
-                {
-                    Log.Information($"Removing { Settings.IgnoredIds.Count - distinct.Count } duplicate IgnoreIds.");
-                    Settings.IgnoredIds = distinct;
-                    SaveConfig();
-                }
-            }
-            else
-            {
-                if (dryRun)
-                {
-                    Log.Information("[DRY] No duplicate IgnoreIds found.");
-                }
-                else
-                {
-                    Log.Information("No duplicate IgnoreIds found.");
-                }
-            }
-
-            distinct = Settings.TrackedSeries.Distinct().ToList();
-            if (Settings.IgnoredIds.Count - distinct.Count > 0)
-            {
-                if (dryRun)
-                {
-                    Log.Information($"[DRY] Removing { Settings.TrackedSeries.Count - distinct.Count } duplicate TrackedSeriesIds.");
-                }
-                else
-                {
-                    Log.Information($"Removing { Settings.TrackedSeries.Count - distinct.Count } duplicate TrackedSeriesIds.");
-                    Settings.TrackedSeries = distinct;
-                    SaveConfig();
-                }
-            }
-            else
-            {
-                if (dryRun)
-                {
-                    Log.Information("[DRY] No duplicate TrackedSeriesIds found.");
-                }
-                else
-                {
-                    Log.Information("No duplicate TrackedSeriesIds found.");
-                }
-            }
-
-            distinct = Settings.TrackedBooks.Distinct().ToList();
-            if (Settings.TrackedBooks.Count - distinct.Count > 0)
-            {
-                if (dryRun)
-                {
-                    Log.Information($"[DRY] Removing { Settings.TrackedBooks.Count - distinct.Count } duplicate TrackedBookIds.");
-                }
-                else
-                {
-                    Log.Information($"Removing { Settings.TrackedBooks.Count - distinct.Count } duplicate TrackedBookIds.");
-                    Settings.TrackedBooks = distinct;
-                    SaveConfig();
-                }
-            }
-            else
-            {
-                if (dryRun)
-                {
-                    Log.Information("[DRY] No duplicate TrackedBookIds found.");
-                }
-                else
-                {
-                    Log.Information("No duplicate TrackedBookIds found.");
-                }
-            }
-
-            return (int)ExitCode.Default;
-        }
-
         internal void SaveConfig()
         {
             Log.Debug("Saving config.");
-            using (StreamWriter writer = new StreamWriter(Utilities.pathToConfig, append: false))
+            using (StreamWriter writer = new(Utilities.pathToConfig, append: false))
             {
                 string json = JsonSerializer.Serialize(
                     AmazonBookReleaseTrackerSettings.GetSettings(Settings), Utilities.jsonSerializerOptions);

@@ -5,6 +5,7 @@ using System.IO;
 using System.Text.Json;
 using Serilog;
 using CommandDotNet;
+using System.Linq;
 
 namespace AmazonBookReleaseTracker
 {
@@ -34,27 +35,25 @@ namespace AmazonBookReleaseTracker
                 switch (amazonLink.GetProductType())
                 {
                     case AmazonProductType.Book:
-                        if (Config.Settings.TrackedBooks.Contains(amazonId))
+                        if (Config.Settings.TrackedBooks.Add(amazonId))
                         {
-                            Log.Information($"{ amazonId.Asin } book already tracked.");
-                        }
-                        else
-                        {
-                            Config.Settings.TrackedBooks.Add(amazonId);
                             Log.Information($"{ amazonId.Asin } book tracked.");
                             Config.SaveConfig();
                         }
+                        else
+                        {
+                            Log.Information($"{ amazonId.Asin } book already tracked.");
+                        }
                         break;
                     case AmazonProductType.Series:
-                        if (Config.Settings.TrackedSeries.Contains(amazonId))
+                        if (Config.Settings.TrackedSeries.Add(amazonId))
                         {
-                            Log.Information($"{ amazonId.Asin } series already tracked.");
+                            Log.Information($"{ amazonId.Asin } series tracked.");
+                            Config.SaveConfig();
                         }
                         else
                         {
-                            Config.Settings.TrackedSeries.Add(amazonId);
-                            Log.Information($"{ amazonId.Asin } series tracked.");
-                            Config.SaveConfig();
+                            Log.Information($"{ amazonId.Asin } series already tracked.");
                         }
                         break;
                     case AmazonProductType.Unknown:
@@ -168,15 +167,14 @@ namespace AmazonBookReleaseTracker
                 }
                 else
                 {
-                    if (Config.Settings.IgnoredIds.Contains(amazonId))
+                    if (Config.Settings.IgnoredIds.Add(amazonId))
                     {
-                        Log.Information($"{ amazonId.Asin } asin already in ignore list.");
+                        Log.Information($"{ amazonId.Asin } asin added to ignore list.");
+                        Config.SaveConfig();
                     }
                     else
                     {
-                        Config.Settings.IgnoredIds.Add(amazonId);
-                        Log.Information($"{ amazonId.Asin } asin added to ignore list.");
-                        Config.SaveConfig();
+                        Log.Information($"{ amazonId.Asin } asin already in ignore list.");
                     }
                 }
             }
@@ -208,10 +206,7 @@ namespace AmazonBookReleaseTracker
             var booksIds = Config.Settings.TrackedBooks;
 
             Log.Debug("Removing ignored series.");
-            foreach (var item in Config.Settings.IgnoredIds)
-            {
-                seriesIds.Remove(item);
-            }
+            seriesIds.ExceptWith(Config.Settings.IgnoredIds);
 
             Log.Information($"Processing { seriesIds.Count } series.");
             var amazonSeriesList = new List<AmazonSeries>(seriesIds.Count);
@@ -236,18 +231,11 @@ namespace AmazonBookReleaseTracker
             }
 
             Log.Debug("Removing ignored books.");
-            foreach (var item in Config.Settings.IgnoredIds)
-            {
-                booksIds.Remove(item);
-            }
+            booksIds.ExceptWith(Config.Settings.IgnoredIds);
 
-            int count = 0;
-            foreach (var series in amazonSeriesList)
-            {
-                count += series.Books.Count;
-            }
+            int count = amazonSeriesList.Sum(x => x.Books.Count);
 
-            var oldReleasIds = new List<AmazonId>();
+            var oldReleasIds = new SortedSet<AmazonId>(new AmazonIdComparer());
 
             Log.Information($"Processing { count } + { booksIds.Count } books.");
             foreach (var series in amazonSeriesList)

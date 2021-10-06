@@ -10,12 +10,15 @@ using CommandDotNet;
 namespace AmazonBookReleaseTracker
 {
     [Validator(typeof(AmazonIdValidator))]
-    public class AmazonId : IArgumentModel, IEquatable<AmazonId>
+    public class AmazonId : IArgumentModel, IEquatable<AmazonId>, IComparable<AmazonId>
     {
         private static readonly Regex _regexValidation = new("(^B\\d{2}\\w{7})|(^B\\d{9}(X|\\d))$",
-            RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
+                                                             RegexOptions.Compiled,
+                                                             TimeSpan.FromMilliseconds(250));
         private static readonly Regex _regexFind = new("(B\\d{2}\\w{7})|(B\\d{9}(X|\\d))$",
-            RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
+                                                       RegexOptions.Compiled,
+                                                       TimeSpan.FromMilliseconds(250));
+        private static readonly AmazonIdComparer _amazonIdComparer = new();
 
         private string _asin = string.Empty;
         private Guid _guid = Guid.ParseExact(Utilities.CreateMD5(string.Empty), "N");
@@ -115,6 +118,16 @@ namespace AmazonBookReleaseTracker
             return false;
         }
 
+        public int CompareTo(AmazonId other)
+        {
+            if (other is null)
+            {
+                return 1;
+            }
+
+            return _amazonIdComparer.Compare(this, other);
+        }
+
         public static bool operator ==(AmazonId amazonId1, AmazonId amazonId2)
         {
             if ((object)amazonId1 == null || ((object)amazonId2) == null)
@@ -128,6 +141,26 @@ namespace AmazonBookReleaseTracker
         public static bool operator !=(AmazonId amazonId1, AmazonId amazonId2)
         {
             return !(amazonId1 == amazonId2);
+        }
+
+        public static bool operator <(AmazonId left, AmazonId right)
+        {
+            return left is null ? right is not null : left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(AmazonId left, AmazonId right)
+        {
+            return left is null || left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >(AmazonId left, AmazonId right)
+        {
+            return left is not null && left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(AmazonId left, AmazonId right)
+        {
+            return left is null ? right is null : left.CompareTo(right) >= 0;
         }
     }
 }

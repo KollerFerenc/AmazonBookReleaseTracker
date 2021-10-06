@@ -9,9 +9,11 @@ namespace AmazonBookReleaseTracker
 {
     public class AmazonBookReleaseTrackerSettings : IAmazonBookReleaseTrackerSettings
     {
-        public List<AmazonId> TrackedSeries { get; set; } = new();
-        public List<AmazonId> TrackedBooks { get; set; } = new();
-        public List<AmazonId> IgnoredIds { get; set; } = new();
+        private static readonly AmazonIdComparer _amazonIdComparer = new();
+
+        public SortedSet<AmazonId> TrackedSeries { get; set; } = new(_amazonIdComparer);
+        public SortedSet<AmazonId> TrackedBooks { get; set; } = new(_amazonIdComparer);
+        public SortedSet<AmazonId> IgnoredIds { get; set; } = new(_amazonIdComparer);
         public List<string> IcsCategories { get; set; } = new()
         {
             "Book release",
