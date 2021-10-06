@@ -128,5 +128,13 @@ namespace AmazonBookReleaseTracker
         {
             return ((dateTime >= start) && (dateTime <= end));
         }
+
+        public static void SortBooks(this IEnumerable<AmazonSeries> amazonSerieses, IComparer<AmazonBook> comparer)
+        {
+            foreach (var item in amazonSerieses)
+            {
+                item.Books.Sort(comparer);
+            }
+        }
     }
 }

@@ -316,6 +316,10 @@ namespace AmazonBookReleaseTracker
                 File.Move(Utilities.pathToDataNew, Utilities.pathToDataOld, overwrite: true);
             }
 
+            Log.Debug("Sorting books by release date.");
+            amazonSeriesList.SortBooks(new AmazonBookReleaseDateComparer());
+            amazonBooksList.Sort(new AmazonBookReleaseDateComparer());
+
             var trackingData = new TrackingData(dateNow, amazonSeriesList, amazonBooksList);
 
             Log.Debug("Writing new data file.");
