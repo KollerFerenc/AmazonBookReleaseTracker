@@ -217,12 +217,17 @@ namespace AmazonBookReleaseTracker
 
                 try
                 {
-                    tempSeries.ProcessHtml(html);
+                    if (tempSeries.ProcessHtml(html))
+                    {
+                        Log.Debug("Removing ignored books from series.");
+                        tempSeries.Books = tempSeries.Books.FindAll(b => !Config.Settings.IgnoredIds.Contains(b.AmazonId));
 
-                    Log.Debug("Removing ignored books from series.");
-                    tempSeries.Books = tempSeries.Books.FindAll(b => !Config.Settings.IgnoredIds.Contains(b.AmazonId));
-
-                    amazonSeriesList.Add(tempSeries);
+                        amazonSeriesList.Add(tempSeries);
+                    }
+                    else
+                    {
+                        Log.Error($"Cannot parse { tempSeries.Title } ({ tempSeries.AmazonId.Asin }).");
+                    }
                 }
                 catch (NotSeriesException)
                 {
@@ -245,14 +250,19 @@ namespace AmazonBookReleaseTracker
                     var html = await Utilities.GetHtml(book.GetUri());
                     try
                     {
-                        book.ProcessHtml(html);
-
-                        if (Config.Settings.IgnoreReleasedBooks)
+                        if (book.ProcessHtml(html))
                         {
-                            if (book.ReleaseDate.AddDays((double)Config.Settings.IgnoreAfterReleaseDays) < dateNow)
+                            if (Config.Settings.IgnoreReleasedBooks)
                             {
-                                oldReleasIds.Add(book.AmazonId);
+                                if (book.ReleaseDate.AddDays((double)Config.Settings.IgnoreAfterReleaseDays) < dateNow)
+                                {
+                                    oldReleasIds.Add(book.AmazonId);
+                                }
                             }
+                        }
+                        else
+                        {
+                            Log.Error($"Cannot parse { book.Title } ({ book.AmazonId.Asin }).");
                         }
                     }
                     catch (NotBookException)
@@ -270,13 +280,18 @@ namespace AmazonBookReleaseTracker
                 var html = await Utilities.GetHtml(tempBook.GetUri());
                 try
                 {
-                    tempBook.ProcessHtml(html);
-
-                    if (Config.Settings.IgnoreReleasedBooks)
+                    if (tempBook.ProcessHtml(html))
                     {
-                        if (tempBook.ReleaseDate.AddDays((double)Config.Settings.IgnoreAfterReleaseDays) < dateNow)
+                        if (Config.Settings.IgnoreReleasedBooks)
                         {
-                            oldReleasIds.Add(tempBook.AmazonId);
+                            if (tempBook.ReleaseDate.AddDays((double)Config.Settings.IgnoreAfterReleaseDays) < dateNow)
+                            {
+                                oldReleasIds.Add(tempBook.AmazonId);
+                            }
+                            else
+                            {
+                                amazonBooksList.Add(tempBook);
+                            }
                         }
                         else
                         {
@@ -285,7 +300,7 @@ namespace AmazonBookReleaseTracker
                     }
                     else
                     {
-                        amazonBooksList.Add(tempBook);
+                        Log.Error($"Cannot parse { tempBook.Title } ({ tempBook.AmazonId.Asin }).");
                     }
                 }
                 catch (NotBookException)

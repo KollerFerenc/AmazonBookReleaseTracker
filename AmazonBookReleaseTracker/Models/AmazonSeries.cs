@@ -35,10 +35,20 @@ namespace AmazonBookReleaseTracker
             return null;
         }
 
-        public void ProcessHtml(Stream htmlStream)
+        public bool ProcessHtml(Stream htmlStream)
+        {
+            return ProcessHtml(htmlStream, Encoding.UTF8);
+        }
+
+        public bool ProcessHtml(Stream htmlStream, Encoding encoding)
         {
             HtmlDocument htmlDoc = new();
-            htmlDoc.Load(htmlStream, Encoding.UTF8);
+            htmlDoc.Load(htmlStream, encoding);
+
+            if (htmlDoc.ParseErrors != null && htmlDoc.ParseErrors.Any())
+            {
+                return false;
+            }
 
             var titleNode = htmlDoc.GetElementbyId("collection-title");
             if (titleNode is null)
@@ -72,6 +82,8 @@ namespace AmazonBookReleaseTracker
             {
                 Log.Warning($"Count mismatch with { AmazonId.Asin }. Expected: { count }, found: { Books.Count }.");
             }
+
+            return true;
         }
 
         public bool Equals(AmazonSeries other)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace AmazonBookReleaseTracker
 {
@@ -9,6 +10,7 @@ namespace AmazonBookReleaseTracker
         string Title { get; set; }
 
         Uri GetUri();
-        void ProcessHtml(Stream htmlStream);
+        bool ProcessHtml(Stream htmlStream);
+        bool ProcessHtml(Stream htmlStream, Encoding encoding);
     }
 }

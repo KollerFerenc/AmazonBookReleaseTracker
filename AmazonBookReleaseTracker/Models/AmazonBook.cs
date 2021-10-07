@@ -43,10 +43,20 @@ namespace AmazonBookReleaseTracker
                 "N");
         }
 
-        public void ProcessHtml(Stream htmlStream)
+        public bool ProcessHtml(Stream htmlStream)
+        {
+            return ProcessHtml(htmlStream, Encoding.UTF8);
+        }
+
+        public bool ProcessHtml(Stream htmlStream, Encoding encoding)
         {
             HtmlDocument htmlDoc = new();
-            htmlDoc.Load(htmlStream);
+            htmlDoc.Load(htmlStream, encoding);
+
+            if (htmlDoc.ParseErrors != null && htmlDoc.ParseErrors.Any())
+            {
+                return false;
+            }
 
             var titleNode = htmlDoc.GetElementbyId("productTitle");
             if (titleNode is null)
@@ -83,6 +93,8 @@ namespace AmazonBookReleaseTracker
 
             ReleaseDate = DateTime.Parse(releaseDate, new CultureInfo("en-US"), DateTimeStyles.None);
             ReleaseDate = ReleaseDate.AddHours(9d);
+
+            return true;
         }
 
         public bool Equals(AmazonBook other)
