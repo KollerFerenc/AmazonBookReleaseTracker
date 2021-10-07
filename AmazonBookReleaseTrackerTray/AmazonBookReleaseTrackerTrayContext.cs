@@ -10,13 +10,17 @@ using System.IO;
 using System.Diagnostics;
 using Microsoft.Win32;
 using System.Drawing;
+using System.ComponentModel;
+using System.Threading;
 
 namespace AmazonBookReleaseTrackerTray
 {
     public class AmazonBookReleaseTrackerTrayContext : ApplicationContext
     {
         private NotifyIcon _trayIcon;
-        private bool _running = false;
+
+        private readonly BackgroundWorker _backgroundWorker = new();
+        private CancellationTokenSource _cancellationTokenSource = new();
 
         internal AmazonContainer AmazonContainer { get; private set; } = new AmazonContainer();
         internal static readonly Icon icon = new System.Drawing.Icon(File.Open(Path.Combine(Program.baseDirectory, "Assets\\books.ico"), FileMode.Open));
@@ -24,6 +28,7 @@ namespace AmazonBookReleaseTrackerTray
         public AmazonBookReleaseTrackerTrayContext()
         {
             InitializeComponents();
+            ConfigureBackgroundWorker();
 
 #if RELEASE
             CheckAutoStart();
@@ -66,6 +71,15 @@ namespace AmazonBookReleaseTrackerTray
             };
         }
 
+        private void ConfigureBackgroundWorker()
+        {
+            _backgroundWorker.WorkerReportsProgress = false;
+            _backgroundWorker.WorkerSupportsCancellation = true;
+
+            _backgroundWorker.DoWork += BackgroundWorker_DoWork;
+            _backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
+        }
+
         private void CheckAutoStart()
         {
             RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
@@ -89,46 +103,13 @@ namespace AmazonBookReleaseTrackerTray
 
         private void RunTracker()
         {
-            if (!_running)
+            if (!_backgroundWorker.IsBusy)
             {
-                _running = true;
+                _cancellationTokenSource = new();
+                var ct = _cancellationTokenSource.Token;
+                ct.Register(_backgroundWorker.CancelAsync);
 
-                var tracker = new Process
-                {
-                    StartInfo = new ProcessStartInfo(Path.Combine(Program.baseDirectory, "AmazonBookReleaseTracker.exe"), "run")
-                    {
-                        UseShellExecute = true,
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        CreateNoWindow = true,
-                    }
-                };
-
-                try
-                {
-                    tracker.Start();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                    throw;
-                }
-                tracker.WaitForExit();
-
-                if ((ExitCode)tracker.ExitCode == ExitCode.Default)
-                {
-                    AmazonContainer = new Export().GetData(newOnly: false).GetWithin(Properties.Settings.Default.NotifyWithin);
-                    if (AmazonContainer.BookCount > 0)
-                    {
-                        SendToast($"{ AmazonContainer.BookCount } book(s) to be released within { Properties.Settings.Default.NotifyWithin } day(s).");
-                    }
-                }
-                else
-                {
-                    MessageBox.Show(((ExitCode)tracker.ExitCode).ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-
-
-                _running = false;
+                _backgroundWorker.RunWorkerAsync();
             }
         }
 
@@ -204,10 +185,73 @@ namespace AmazonBookReleaseTrackerTray
 
         public void Exit(object sender, EventArgs e)
         {
+            if (_backgroundWorker.WorkerSupportsCancellation && _backgroundWorker.IsBusy)
+            {
+                _backgroundWorker.CancelAsync();
+                _cancellationTokenSource.Cancel();
+
+                while (_backgroundWorker.IsBusy)
+                {
+                    Thread.Sleep(100);
+                }
+            }
+
             _trayIcon.Visible = false;
             _trayIcon.Dispose();
 
+            _backgroundWorker.Dispose();
+            _cancellationTokenSource.Dispose();
+
             Application.Exit();
+        }
+
+        private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+
+            var tracker = new AmazonBookReleaseTracker.AmazonBookReleaseTracker();
+            try
+            {
+                int? result = Task.Run(() => tracker.Run(_cancellationTokenSource.Token)).GetAwaiter().GetResult();
+                e.Result = result;
+            }
+            catch (TaskCanceledException)
+            {
+                e.Cancel = true;
+            }
+            catch (OperationCanceledException)
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Cancelled == true)
+            {
+                MessageBox.Show("Cancelled!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+            else if (e.Error != null)
+            {
+                MessageBox.Show(e.Error.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                int? result = e.Result as int?;
+                if (result.HasValue && (ExitCode)result.Value == ExitCode.Default)
+                {
+                    //AmazonContainer = new Export().GetData(newOnly: false).GetWithin(Properties.Settings.Default.NotifyWithin);
+                    AmazonContainer = new Export().GetData(newOnly: false);
+                    if (AmazonContainer.BookCount > 0)
+                    {
+                        SendToast($"{ AmazonContainer.BookCount } book(s) to be released within { Properties.Settings.Default.NotifyWithin } day(s).");
+                    }
+                }
+                else if (result.HasValue)
+                {
+                    MessageBox.Show(((ExitCode)result.Value).ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
     }
 }

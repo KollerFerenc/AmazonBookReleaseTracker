@@ -6,6 +6,7 @@ using System.Text.Json;
 using Serilog;
 using CommandDotNet;
 using System.Linq;
+using System.Threading;
 
 namespace AmazonBookReleaseTracker
 {
@@ -190,8 +191,10 @@ namespace AmazonBookReleaseTracker
         [Command(
             Name = "run",
             Description = "Run tracking.")]
-        public async Task<int> Run()
+        public async Task<int> Run(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (!Config.SettingsImported)
             {
                 var result = Config.ImportSettings();
@@ -208,12 +211,13 @@ namespace AmazonBookReleaseTracker
             Log.Debug("Removing ignored series.");
             seriesIds.ExceptWith(Config.Settings.IgnoredIds);
 
+            cancellationToken.ThrowIfCancellationRequested();
             Log.Information($"Processing { seriesIds.Count } series.");
             var amazonSeriesList = new List<AmazonSeries>(seriesIds.Count);
             foreach (var seriesId in seriesIds)
             {
                 var tempSeries = new AmazonSeries(seriesId);
-                var html = await Utilities.GetHtml(tempSeries.GetUri());
+                var html = await Utilities.GetHtml(tempSeries.GetUri(), cancellationToken);
 
                 try
                 {
@@ -233,6 +237,8 @@ namespace AmazonBookReleaseTracker
                 {
                     Log.Error($"Skipping { seriesId.Asin }, it is not a series.");
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
             }
 
             Log.Debug("Removing ignored books.");
@@ -242,12 +248,13 @@ namespace AmazonBookReleaseTracker
 
             var oldReleasIds = new SortedSet<AmazonId>(new AmazonIdComparer());
 
+            cancellationToken.ThrowIfCancellationRequested();
             Log.Information($"Processing { count } + { booksIds.Count } books.");
             foreach (var series in amazonSeriesList)
             {
                 foreach (var book in series.Books)
                 {
-                    var html = await Utilities.GetHtml(book.GetUri());
+                    var html = await Utilities.GetHtml(book.GetUri(), cancellationToken);
                     try
                     {
                         if (book.ProcessHtml(html))
@@ -269,15 +276,18 @@ namespace AmazonBookReleaseTracker
                     {
                         Log.Error($"Skipping { book.AmazonId.Asin }, it is not a book.");
                     }
+
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
             var amazonBooksList = new List<AmazonBook>(booksIds.Count);
             foreach (var bookId in booksIds)
             {
                 var tempBook = new AmazonBook(bookId);
 
-                var html = await Utilities.GetHtml(tempBook.GetUri());
+                var html = await Utilities.GetHtml(tempBook.GetUri(), cancellationToken);
                 try
                 {
                     if (tempBook.ProcessHtml(html))
@@ -307,6 +317,8 @@ namespace AmazonBookReleaseTracker
                 {
                     Log.Error($"Skipping { tempBook.AmazonId.Asin }, it is not a book.");
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
             }
 
             if (oldReleasIds.Count > 0)
@@ -325,6 +337,7 @@ namespace AmazonBookReleaseTracker
                 Config.SaveConfig();
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
             if (File.Exists(Utilities.pathToDataNew))
             {
                 Log.Verbose("Moving old data file.");
@@ -344,6 +357,7 @@ namespace AmazonBookReleaseTracker
                 writer.Write(json);
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
             return (int)ExitCode.Default;
         }
     }

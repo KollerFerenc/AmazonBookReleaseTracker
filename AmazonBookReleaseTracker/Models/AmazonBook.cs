@@ -51,11 +51,12 @@ namespace AmazonBookReleaseTracker
         public bool ProcessHtml(Stream htmlStream, Encoding encoding)
         {
             HtmlDocument htmlDoc = new();
+            htmlDoc.OptionFixNestedTags = true;
             htmlDoc.Load(htmlStream, encoding);
-
+            
             if (htmlDoc.ParseErrors != null && htmlDoc.ParseErrors.Any())
             {
-                return false;
+                //return false;
             }
 
             var titleNode = htmlDoc.GetElementbyId("productTitle");

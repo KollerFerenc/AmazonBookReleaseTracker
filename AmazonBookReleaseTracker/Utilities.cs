@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AmazonBookReleaseTracker
@@ -65,9 +66,9 @@ namespace AmazonBookReleaseTracker
             Utilities.client.DefaultRequestHeaders.Accept.Clear();
         }
 
-        public static async Task<Stream> GetHtml(Uri uri)
+        public static async Task<Stream> GetHtml(Uri uri, CancellationToken cancellationToken = default)
         {
-            return await Utilities.client.GetStreamAsync(uri);
+            return await Utilities.client.GetStreamAsync(uri, cancellationToken);
         }
     }
 }
