@@ -126,8 +126,8 @@ namespace AmazonBookReleaseTracker
             Log.Information("Writing iCalendar file.");
 
             var cal = new Ical.Net.Calendar();
-            string calString = "";
 
+            string calString;
             if (append)
             {
                 calString = File.ReadAllText(Config.Settings.GetExportPath("ics"));
@@ -149,7 +149,6 @@ namespace AmazonBookReleaseTracker
                 cal.Events.Add(book, Config.Settings.IcsCategories);
             }
 
-            calString = "";
             var serializer = new CalendarSerializer();
 
             using (var writer = new StreamWriter(
@@ -171,7 +170,7 @@ namespace AmazonBookReleaseTracker
             }
 
             var data = GetData(newOnly);
-            var lines = new List<string>(data.BookCount);
+            List<string> lines = new(data.BookCount);
 
             lines.Add($"Releases: { data.BookCount }");
             foreach (var series in data.AmazonSeries)
@@ -181,14 +180,14 @@ namespace AmazonBookReleaseTracker
                     lines.Add($"- { series.Title } ({ series.Books.Count })");
                     foreach (var book in series.Books)
                     {
-                        lines.Add($"\t- { book.Title }: { book.ReleaseDate.ToString("d") }");
+                        lines.Add($"\t- { book.Title }: { book.ReleaseDate:d}");
                     }
                 }
             }
 
             foreach (var book in data.AmazonBooks)
             {
-                lines.Add($"- { book.Title }: { book.ReleaseDate.ToString("d") }");
+                lines.Add($"- { book.Title }: { book.ReleaseDate:d}");
             }
 
             return lines;

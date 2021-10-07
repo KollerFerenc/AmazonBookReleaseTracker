@@ -130,7 +130,7 @@ namespace AmazonBookReleaseTracker
 
         public static bool operator ==(AmazonId amazonId1, AmazonId amazonId2)
         {
-            if ((object)amazonId1 == null || ((object)amazonId2) == null)
+            if (amazonId1 is null || amazonId2 is null)
             {
                 return System.Object.Equals(amazonId1, amazonId2);
             }
