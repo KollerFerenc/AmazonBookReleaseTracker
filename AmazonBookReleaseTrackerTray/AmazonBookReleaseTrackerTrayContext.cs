@@ -240,8 +240,7 @@ namespace AmazonBookReleaseTrackerTray
                 int? result = e.Result as int?;
                 if (result.HasValue && (ExitCode)result.Value == ExitCode.Default)
                 {
-                    //AmazonContainer = new Export().GetData(newOnly: false).GetWithin(Properties.Settings.Default.NotifyWithin);
-                    AmazonContainer = new Export().GetData(newOnly: false);
+                    AmazonContainer = new Export().GetData(newOnly: false).GetWithin(Properties.Settings.Default.NotifyWithin);
                     if (AmazonContainer.BookCount > 0)
                     {
                         SendToast($"{ AmazonContainer.BookCount } book(s) to be released within { Properties.Settings.Default.NotifyWithin } day(s).");
