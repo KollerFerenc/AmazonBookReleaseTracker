@@ -170,10 +170,20 @@ namespace AmazonBookReleaseTracker
             }
 
             var data = GetData(newOnly);
-            List<string> lines = new(data.BookCount);
+            return GetExportConsoleLines(data);
+        }
 
-            lines.Add($"Releases: { data.BookCount }");
-            foreach (var series in data.AmazonSeries)
+        public IEnumerable<string> GetExportConsoleLines(AmazonContainer amazonContainer)
+        {
+            if (!Config.SettingsImported)
+            {
+                Config.ImportSettings();
+            }
+
+            List<string> lines = new(amazonContainer.BookCount);
+
+            lines.Add($"Releases: { amazonContainer.BookCount }");
+            foreach (var series in amazonContainer.AmazonSeries)
             {
                 if (series.Books.Count > 0)
                 {
@@ -185,7 +195,7 @@ namespace AmazonBookReleaseTracker
                 }
             }
 
-            foreach (var book in data.AmazonBooks)
+            foreach (var book in amazonContainer.AmazonBooks)
             {
                 lines.Add($"- { book.Title }: { book.ReleaseDate:d}");
             }
@@ -206,12 +216,12 @@ namespace AmazonBookReleaseTracker
                 return new AmazonContainer();
             }
 
-            var newData = ImportTrackingData(Utilities.pathToDataNew);
+            var newData = ImportData(Utilities.pathToDataNew);
 
             var oldData = new TrackingData();
             if (File.Exists(Utilities.pathToDataOld))
             {
-                oldData = ImportTrackingData(Utilities.pathToDataOld);
+                oldData = ImportData(Utilities.pathToDataOld);
             }
 
             var analyzer = new TrackingDataAnalyzer(oldData, newData);
@@ -229,17 +239,35 @@ namespace AmazonBookReleaseTracker
             return data;
         }
 
-        private static TrackingData ImportTrackingData(string pathToData)
+        public AmazonContainer GetIgnoredData()
+        {
+            if (!Config.SettingsImported)
+            {
+                Config.ImportSettings();
+            }
+
+            if (!File.Exists(Utilities.pathToIgnoredData))
+            {
+                Log.Fatal("No data file found.");
+                return new AmazonContainer();
+            }
+
+            var ignoredData = ImportData(Utilities.pathToDataNew);
+
+            return ignoredData;
+        }
+
+        private static TrackingData ImportData(string pathToData)
         {
             if (!File.Exists(pathToData))
             {
-                Log.Fatal("Tracking data not found.");
+                Log.Fatal("Data file not found.");
                 return new TrackingData();
             }
 
             var trackingData = new TrackingData();
 
-            Log.Debug("Importing tracking data file.");
+            Log.Debug("Importing data file.");
             using (StreamReader reader = new(pathToData))
             {
                 try
@@ -248,7 +276,7 @@ namespace AmazonBookReleaseTracker
                 }
                 catch (Exception)
                 {
-                    Log.Fatal("Could not load tracking data.");
+                    Log.Fatal("Could not load data.");
                     return new TrackingData();
                 }
             }

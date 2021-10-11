@@ -23,6 +23,7 @@ namespace AmazonBookReleaseTracker
         public static readonly string pathToConfig = Path.Combine(Program.baseDirectory, @"config.json");
         public static readonly string pathToDataNew = Path.Combine(Program.baseDirectory, @"data.new.json");
         public static readonly string pathToDataOld = Path.Combine(Program.baseDirectory, @"data.old.json");
+        public static readonly string pathToIgnoredData = Path.Combine(Program.baseDirectory, @"ignoredData.json");
 
         public static readonly JsonSerializerOptions jsonSerializerOptions = new()
         {

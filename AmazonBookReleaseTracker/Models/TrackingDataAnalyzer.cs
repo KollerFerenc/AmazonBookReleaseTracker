@@ -13,8 +13,8 @@ namespace AmazonBookReleaseTracker
 
         public TrackingDataAnalyzer(TrackingData oldData, TrackingData newData)
         {
-            _oldData = oldData;
-            _newData = newData;
+            _oldData = oldData ?? new();
+            _newData = newData ?? new();
         }
 
         public AmazonContainer GetAll()

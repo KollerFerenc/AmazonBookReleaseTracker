@@ -212,7 +212,7 @@ namespace AmazonBookReleaseTrackerTray
             var tracker = new AmazonBookReleaseTracker.AmazonBookReleaseTracker();
             try
             {
-                int? result = Task.Run(() => tracker.Run(_cancellationTokenSource.Token)).GetAwaiter().GetResult();
+                int? result = Task.Run(() => tracker.RunTrackingAsync(_cancellationTokenSource.Token)).GetAwaiter().GetResult();
                 e.Result = result;
             }
             catch (TaskCanceledException)

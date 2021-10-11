@@ -191,7 +191,7 @@ namespace AmazonBookReleaseTracker
         [Command(
             Name = "run",
             Description = "Run tracking.")]
-        public async Task<int> Run(CancellationToken cancellationToken = default)
+        public async Task<int> RunTrackingAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -352,6 +352,65 @@ namespace AmazonBookReleaseTracker
 
             Log.Debug("Writing new data file.");
             using (var writer = new StreamWriter(Utilities.pathToDataNew, append: false))
+            {
+                string json = JsonSerializer.Serialize(trackingData, Utilities.jsonSerializerOptions);
+                writer.Write(json);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            return (int)ExitCode.Default;
+        }
+
+        [Command(
+            Name = "createIgnoredData",
+            Description = "Create data for ignored books.")]
+        public async Task<int> CreateIgnoredData(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (!Config.SettingsImported)
+            {
+                var result = Config.ImportSettings();
+                if (result != ExitCode.Default)
+                {
+                    return (int)result;
+                }
+            }
+
+            var dateNow = DateTime.Now;
+            var amazonBooksList = new List<AmazonBook>(Config.Settings.IgnoredIds.Count);
+            cancellationToken.ThrowIfCancellationRequested();
+            Log.Information($"Processing { amazonBooksList.Count } books.");
+            foreach (var bookId in Config.Settings.IgnoredIds)
+            {
+                var tempBook = new AmazonBook(bookId);
+                var html = await Utilities.GetHtml(tempBook.GetUri(), cancellationToken);
+                try
+                {
+                    if (tempBook.ProcessHtml(html))
+                    {
+                        amazonBooksList.Add(tempBook);
+                    }
+                    else
+                    {
+                        Log.Error($"Cannot parse { tempBook.Title } ({ tempBook.AmazonId.Asin }).");
+                    }
+                }
+                catch (NotBookException)
+                {
+                    Log.Error($"Skipping { tempBook.AmazonId.Asin }, it is not a book.");
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            Log.Debug("Sorting books by release date.");
+            amazonBooksList.Sort(new AmazonBookReleaseDateComparer());
+
+            var trackingData = new TrackingData(dateNow, Array.Empty<AmazonSeries>(), amazonBooksList);
+
+            Log.Debug("Writing ignored data file.");
+            using (var writer = new StreamWriter(Utilities.pathToIgnoredData, append: false))
             {
                 string json = JsonSerializer.Serialize(trackingData, Utilities.jsonSerializerOptions);
                 writer.Write(json);
