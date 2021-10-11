@@ -170,37 +170,7 @@ namespace AmazonBookReleaseTracker
             }
 
             var data = GetData(newOnly);
-            return GetExportConsoleLines(data);
-        }
-
-        public IEnumerable<string> GetExportConsoleLines(AmazonContainer amazonContainer)
-        {
-            if (!Config.SettingsImported)
-            {
-                Config.ImportSettings();
-            }
-
-            List<string> lines = new(amazonContainer.BookCount);
-
-            lines.Add($"Releases: { amazonContainer.BookCount }");
-            foreach (var series in amazonContainer.AmazonSeries)
-            {
-                if (series.Books.Count > 0)
-                {
-                    lines.Add($"- { series.Title } ({ series.Books.Count })");
-                    foreach (var book in series.Books)
-                    {
-                        lines.Add($"\t- { book.Title }: { book.ReleaseDate:d}");
-                    }
-                }
-            }
-
-            foreach (var book in amazonContainer.AmazonBooks)
-            {
-                lines.Add($"- { book.Title }: { book.ReleaseDate:d}");
-            }
-
-            return lines;
+            return data?.ToLines();
         }
 
         public AmazonContainer GetData(bool newOnly)

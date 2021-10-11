@@ -38,6 +38,31 @@ namespace AmazonBookReleaseTracker
             return GetWithin(this, days);
         }
 
+        public IEnumerable<string> ToLines()
+        {
+            List<string> lines = new(BookCount);
+
+            lines.Add($"Releases: { BookCount }");
+            foreach (var series in AmazonSeries)
+            {
+                if (series.Books.Count > 0)
+                {
+                    lines.Add($"- { series.Title } ({ series.Books.Count })");
+                    foreach (var book in series.Books)
+                    {
+                        lines.Add($"\t- { book.Title }: { book.ReleaseDate:d}");
+                    }
+                }
+            }
+
+            foreach (var book in AmazonBooks)
+            {
+                lines.Add($"- { book.Title }: { book.ReleaseDate:d}");
+            }
+
+            return lines;
+        }
+
         public static AmazonContainer GetAfter(AmazonContainer amazonContainer, DateTime date)
         {
             AmazonContainer output = new();
