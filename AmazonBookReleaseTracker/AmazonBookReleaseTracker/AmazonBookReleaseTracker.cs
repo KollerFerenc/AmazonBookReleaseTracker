@@ -380,7 +380,7 @@ namespace AmazonBookReleaseTracker
             var dateNow = DateTime.Now;
             var amazonBooksList = new List<AmazonBook>(Config.Settings.IgnoredIds.Count);
             cancellationToken.ThrowIfCancellationRequested();
-            Log.Information($"Processing { amazonBooksList.Count } books.");
+            Log.Information($"Processing { Config.Settings.IgnoredIds.Count } books.");
             foreach (var bookId in Config.Settings.IgnoredIds)
             {
                 var tempBook = new AmazonBook(bookId);
