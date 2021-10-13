@@ -43,6 +43,11 @@ namespace AmazonBookReleaseTracker
             List<string> lines = new(BookCount);
 
             lines.Add($"Releases: { BookCount }");
+            foreach (var book in AmazonBooks)
+            {
+                lines.Add($"- { book.Title }: { book.ReleaseDate:d}");
+            }
+
             foreach (var series in AmazonSeries)
             {
                 if (series.Books.Count > 0)
@@ -53,11 +58,6 @@ namespace AmazonBookReleaseTracker
                         lines.Add($"\t- { book.Title }: { book.ReleaseDate:d}");
                     }
                 }
-            }
-
-            foreach (var book in AmazonBooks)
-            {
-                lines.Add($"- { book.Title }: { book.ReleaseDate:d}");
             }
 
             return lines;
@@ -102,6 +102,39 @@ namespace AmazonBookReleaseTracker
             output.AmazonBooks = amazonContainer.AmazonBooks.FindAll(b => b.ReleaseDate.IsBetween(today, today.AddDays(days)));
 
             return output;
+        }
+
+        public void SortByReleaseDate()
+        {
+            AmazonSeries.SortBooks(new AmazonBookReleaseDateComparer());
+            AmazonBooks.Sort(new AmazonBookReleaseDateComparer());
+
+            var emptySeries = new List<AmazonSeries>();
+            var tempList = new List<Tuple<int, DateTime>>();
+
+            for (int i = 0; i < AmazonSeries.Count; i++)
+            {
+                if (AmazonSeries[i].Books.Count > 0)
+                {
+                    tempList.Add(new Tuple<int, DateTime>(i, AmazonSeries[i].Books[0].ReleaseDate));
+                }
+                else
+                {
+                    emptySeries.Add(AmazonSeries[i]);
+                }
+            }
+
+            tempList.Sort((x,y) => x.Item2.CompareTo(y.Item2));
+
+            var sortedList = new List<AmazonSeries>(AmazonSeries.Count);
+            foreach (var item in tempList)
+            {
+                sortedList.Add(AmazonSeries[item.Item1]);
+            }
+
+            sortedList.AddRange(emptySeries);
+
+            AmazonSeries = sortedList;
         }
     }
 }

@@ -344,11 +344,9 @@ namespace AmazonBookReleaseTracker
                 File.Move(Utilities.pathToDataNew, Utilities.pathToDataOld, overwrite: true);
             }
 
-            Log.Debug("Sorting books by release date.");
-            amazonSeriesList.SortBooks(new AmazonBookReleaseDateComparer());
-            amazonBooksList.Sort(new AmazonBookReleaseDateComparer());
-
             var trackingData = new TrackingData(dateNow, amazonSeriesList, amazonBooksList);
+            Log.Debug("Sorting books by release date.");
+            trackingData.SortByReleaseDate();
 
             Log.Debug("Writing new data file.");
             using (var writer = new StreamWriter(Utilities.pathToDataNew, append: false))
@@ -404,10 +402,9 @@ namespace AmazonBookReleaseTracker
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
-            Log.Debug("Sorting books by release date.");
-            amazonBooksList.Sort(new AmazonBookReleaseDateComparer());
-
             var trackingData = new TrackingData(dateNow, Array.Empty<AmazonSeries>(), amazonBooksList);
+            Log.Debug("Sorting books by release date.");
+            trackingData.SortByReleaseDate();
 
             Log.Debug("Writing ignored data file.");
             using (var writer = new StreamWriter(Utilities.pathToIgnoredData, append: false))

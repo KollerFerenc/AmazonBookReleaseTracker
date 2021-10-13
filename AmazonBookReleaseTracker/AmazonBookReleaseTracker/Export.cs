@@ -87,12 +87,12 @@ namespace AmazonBookReleaseTracker
                 }
                 csv.NextRecord();
 
+                csv.WriteRecords(data.AmazonBooks);
+
                 foreach (var series in data.AmazonSeries)
                 {
                     csv.WriteRecords(series.Books);
                 }
-
-                csv.WriteRecords(data.AmazonBooks);
             }
 
             return (int)ExitCode.Default;
