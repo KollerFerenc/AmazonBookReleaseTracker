@@ -67,6 +67,8 @@ namespace AmazonBookReleaseTrackerTray
             {
                 richTextBox1.AppendText($"No release within { Properties.Settings.Default.NotifyWithin } days.{ Environment.NewLine }");
             }
+
+            richTextBox1.SelectionStart = 0;
         }
 
         private void FillTextBox(IEnumerable<string> lines)
@@ -75,6 +77,8 @@ namespace AmazonBookReleaseTrackerTray
             {
                 richTextBox1.AppendText(item + Environment.NewLine);
             }
+
+            richTextBox1.SelectionStart = 0;
         }
 
         private void richTextBox1_LinkClicked(object sender, LinkClickedEventArgs e)
