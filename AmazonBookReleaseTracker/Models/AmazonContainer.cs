@@ -91,7 +91,7 @@ namespace AmazonBookReleaseTracker
             foreach (var series in amazonContainer.AmazonSeries)
             {
                 var tempSeries = series;
-                tempSeries.Books = series.Books.FindAll(b => b.ReleaseDate.IsBetween(today, today.AddDays(days)));
+                tempSeries.Books = series.Books.FindAll(b => b.ReleaseDate.Date.IsBetween(today, today.AddDays(days)));
 
                 if (tempSeries.Books.Count > 0)
                 {
@@ -99,7 +99,7 @@ namespace AmazonBookReleaseTracker
                 }
             }
 
-            output.AmazonBooks = amazonContainer.AmazonBooks.FindAll(b => b.ReleaseDate.IsBetween(today, today.AddDays(days)));
+            output.AmazonBooks = amazonContainer.AmazonBooks.FindAll(b => b.ReleaseDate.Date.IsBetween(today, today.AddDays(days)));
 
             return output;
         }
