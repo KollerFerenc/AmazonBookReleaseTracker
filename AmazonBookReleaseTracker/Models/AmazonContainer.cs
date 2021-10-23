@@ -38,6 +38,11 @@ namespace AmazonBookReleaseTracker
             return GetWithin(this, days);
         }
 
+        public AmazonContainer GetToday()
+        {
+            return GetToday(this);
+        }
+
         public IEnumerable<string> ToLines()
         {
             List<string> lines = new(BookCount);
@@ -100,6 +105,27 @@ namespace AmazonBookReleaseTracker
             }
 
             output.AmazonBooks = amazonContainer.AmazonBooks.FindAll(b => b.ReleaseDate.Date.IsBetween(today, today.AddDays(days)));
+
+            return output;
+        }
+
+        public static AmazonContainer GetToday(AmazonContainer amazonContainer)
+        {
+            AmazonContainer output = new();
+            var today = DateTime.Now.Date;
+
+            foreach (var series in amazonContainer.AmazonSeries)
+            {
+                var tempSeries = series;
+                tempSeries.Books = series.Books.FindAll(b => b.ReleaseDate.Date.Equals(today));
+
+                if (tempSeries.Books.Count > 0)
+                {
+                    output.AmazonSeries.Add(tempSeries);
+                }
+            }
+
+            output.AmazonBooks = amazonContainer.AmazonBooks.FindAll(b => b.ReleaseDate.Date.Equals(today));
 
             return output;
         }

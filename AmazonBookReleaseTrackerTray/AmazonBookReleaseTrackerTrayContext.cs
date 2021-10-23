@@ -23,7 +23,7 @@ namespace AmazonBookReleaseTrackerTray
         private CancellationTokenSource _cancellationTokenSource = new();
 
         internal AmazonContainer AmazonContainer { get; private set; } = new AmazonContainer();
-        internal static readonly Icon icon = new System.Drawing.Icon(File.Open(Path.Combine(Program.baseDirectory, "Assets\\books.ico"), FileMode.Open));
+        internal static readonly Icon icon = new(File.Open(Path.Combine(Program.baseDirectory, "Assets\\books.ico"), FileMode.Open));
 
         public AmazonBookReleaseTrackerTrayContext()
         {
@@ -244,6 +244,12 @@ namespace AmazonBookReleaseTrackerTray
                     if (AmazonContainer.BookCount > 0)
                     {
                         SendToast($"{ AmazonContainer.BookCount } book(s) to be released within { Properties.Settings.Default.NotifyWithin } day(s).");
+
+                        var temp = AmazonContainer.GetToday();
+                        if (temp.BookCount > 0)
+                        {
+                            SendToast($"{ temp.BookCount } book(s) to be released today!");
+                        }
                     }
                 }
                 else if (result.HasValue)
