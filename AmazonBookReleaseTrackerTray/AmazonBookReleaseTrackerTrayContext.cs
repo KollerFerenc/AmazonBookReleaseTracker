@@ -245,10 +245,16 @@ namespace AmazonBookReleaseTrackerTray
                     {
                         SendToast($"{ AmazonContainer.BookCount } book(s) to be released within { Properties.Settings.Default.NotifyWithin } day(s).");
 
-                        var temp = AmazonContainer.GetToday();
-                        if (temp.BookCount > 0)
+                        var today = DateTime.Now.Date;
+                        int todayBookCount = AmazonContainer.AmazonBooks.Count(x => x.ReleaseDate.Date.Equals(today));
+                        foreach (var item in AmazonContainer.AmazonSeries)
                         {
-                            SendToast($"{ temp.BookCount } book(s) to be released today!");
+                            todayBookCount += item.Books.Count(x => x.ReleaseDate.Date.Equals(today));
+                        }
+
+                        if (todayBookCount > 0)
+                        {
+                            SendToast($"{ todayBookCount } book(s) to be released today!");
                         }
                     }
                 }
