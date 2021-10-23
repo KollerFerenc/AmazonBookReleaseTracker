@@ -59,7 +59,7 @@ namespace AmazonBookReleaseTracker
             Settings = new AmazonBookReleaseTrackerSettings();
 
             SettingsImported = true;
-            SaveConfig();
+            SaveConfig(Utilities.pathToConfig);
             return (int)ExitCode.Default;
         }
 
@@ -96,10 +96,37 @@ namespace AmazonBookReleaseTracker
             return (int)ExitCode.Default;
         }
 
-        internal void SaveConfig()
+        [Command(
+            Name = "backup",
+            Description = "Backup config.")]
+        public int Backup()
+        {
+            if (!SettingsImported)
+            {
+                var result = ImportSettings();
+                if (result != ExitCode.Default)
+                {
+                    return (int)result;
+                }
+            }
+
+            try
+            {
+                SaveConfig(Path.Combine(Program.baseDirectory, $@"config-backup-{ DateTime.Now.ToShortDateString().Replace(" ", string.Empty).Replace(".", string.Empty).Replace("-", string.Empty) }.json"));
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Error while saving backup.");
+                return (int)ExitCode.BackupSaveError;
+            }
+
+            return (int)ExitCode.Default;
+        }
+
+        internal void SaveConfig(string pathToFile)
         {
             Log.Debug("Saving config.");
-            using (StreamWriter writer = new(Utilities.pathToConfig, append: false))
+            using (StreamWriter writer = new(pathToFile, append: false))
             {
                 string json = JsonSerializer.Serialize(
                     AmazonBookReleaseTrackerSettings.GetSettings(Settings), Utilities.jsonSerializerOptions);

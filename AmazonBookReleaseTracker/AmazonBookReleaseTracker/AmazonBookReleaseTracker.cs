@@ -39,7 +39,7 @@ namespace AmazonBookReleaseTracker
                         if (Config.Settings.TrackedBooks.Add(amazonId))
                         {
                             Log.Information($"{ amazonId.Asin } book tracked.");
-                            Config.SaveConfig();
+                            Config.SaveConfig(Utilities.pathToConfig);
                         }
                         else
                         {
@@ -50,7 +50,7 @@ namespace AmazonBookReleaseTracker
                         if (Config.Settings.TrackedSeries.Add(amazonId))
                         {
                             Log.Information($"{ amazonId.Asin } series tracked.");
-                            Config.SaveConfig();
+                            Config.SaveConfig(Utilities.pathToConfig);
                         }
                         else
                         {
@@ -96,7 +96,7 @@ namespace AmazonBookReleaseTracker
                         if (Config.Settings.TrackedBooks.Remove(amazonId))
                         {
                             Log.Information($"{ amazonId.Asin } removed book tracking.");
-                            Config.SaveConfig();
+                            Config.SaveConfig(Utilities.pathToConfig);
                         }
                         else
                         {
@@ -107,7 +107,7 @@ namespace AmazonBookReleaseTracker
                         if (Config.Settings.TrackedSeries.Remove(amazonId))
                         {
                             Log.Information($"{ amazonId.Asin } removed series tracking.");
-                            Config.SaveConfig();
+                            Config.SaveConfig(Utilities.pathToConfig);
                         }
                         else
                         {
@@ -159,7 +159,7 @@ namespace AmazonBookReleaseTracker
                     if (Config.Settings.IgnoredIds.Remove(amazonId))
                     {
                         Log.Information($"{ amazonId.Asin } removed from ignore list.");
-                        Config.SaveConfig();
+                        Config.SaveConfig(Utilities.pathToConfig);
                     }
                     else
                     {
@@ -171,7 +171,7 @@ namespace AmazonBookReleaseTracker
                     if (Config.Settings.IgnoredIds.Add(amazonId))
                     {
                         Log.Information($"{ amazonId.Asin } asin added to ignore list.");
-                        Config.SaveConfig();
+                        Config.SaveConfig(Utilities.pathToConfig);
                     }
                     else
                     {
@@ -334,7 +334,7 @@ namespace AmazonBookReleaseTracker
                     Config.Settings.IgnoredIds.Add(item);
                 }
 
-                Config.SaveConfig();
+                Config.SaveConfig(Utilities.pathToConfig);
             }
 
             cancellationToken.ThrowIfCancellationRequested();

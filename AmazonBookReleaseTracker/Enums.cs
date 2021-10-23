@@ -17,6 +17,7 @@ namespace AmazonBookReleaseTracker
         NoProductType = -6,
         DataFileNotFound = -7,
         DataFileLoadError = -8,
+        BackupSaveError = -9,
     }
 
     public enum AmazonProductType
