@@ -92,10 +92,21 @@ namespace AmazonBookReleaseTracker
                 }
             }
 
-            ReleaseDate = DateTime.Parse(releaseDate, new CultureInfo("en-US"), DateTimeStyles.None);
-            ReleaseDate = ReleaseDate.AddHours(9d);
+            if (!string.IsNullOrWhiteSpace(releaseDate))
+            {
+                try
+                {
+                    ReleaseDate = DateTime.Parse(releaseDate, new CultureInfo("en-US"), DateTimeStyles.None);
+                    ReleaseDate = ReleaseDate.AddHours(9d);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Cannot parse {Asin} release date.", this.AmazonId.Asin);
+                }
+            }
 
-            return true;
+            return false;
         }
 
         public bool Equals(AmazonBook other)
