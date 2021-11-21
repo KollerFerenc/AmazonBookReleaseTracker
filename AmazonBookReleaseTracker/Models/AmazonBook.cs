@@ -15,6 +15,8 @@ namespace AmazonBookReleaseTracker
         public  AmazonId AmazonId { get; set; }
         public string Title { get; set; }
         public DateTime ReleaseDate { get; set; }
+        public string CoverLink { get; set; } = string.Empty;
+        public bool HasCover => !string.IsNullOrWhiteSpace(CoverLink);
 
         public AmazonBook()
         {
@@ -90,6 +92,12 @@ namespace AmazonBookReleaseTracker
                     releaseDate = listSpans[1].InnerText.Trim();
                     break;
                 }
+            }
+
+            var img = htmlDoc.GetElementbyId("ebooksImgBlkFront")?.Attributes["src"];
+            if (img is not null && !string.IsNullOrWhiteSpace(img.Value))
+            {
+                CoverLink = img.Value;
             }
 
             if (!string.IsNullOrWhiteSpace(releaseDate))

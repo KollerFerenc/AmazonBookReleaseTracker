@@ -243,18 +243,34 @@ namespace AmazonBookReleaseTrackerTray
                     AmazonContainer = new Export().GetData(newOnly: false).GetWithin(Properties.Settings.Default.NotifyWithin);
                     if (AmazonContainer.BookCount > 0)
                     {
-                        SendToast($"{ AmazonContainer.BookCount } book(s) to be released within { Properties.Settings.Default.NotifyWithin } day(s).");
-
+                        var todayBooks = new List<AmazonBook>();
                         var today = DateTime.Now.Date;
-                        int todayBookCount = AmazonContainer.AmazonBooks.Count(x => x.ReleaseDate.Date.Equals(today));
+
+                        todayBooks.AddRange(AmazonContainer.AmazonBooks.Where(x => x.ReleaseDate.Date.Equals(today)));
                         foreach (var item in AmazonContainer.AmazonSeries)
                         {
-                            todayBookCount += item.Books.Count(x => x.ReleaseDate.Date.Equals(today));
+                            todayBooks.AddRange(item.Books.Where(x => x.ReleaseDate.Date.Equals(today)));
                         }
 
-                        if (todayBookCount > 0)
+                        if (todayBooks.Count > 0)
                         {
-                            SendToast($"{ todayBookCount } book(s) to be released today!");
+                            SendToast($"{ todayBooks.Count } book(s) to be released today! { AmazonContainer.BookCount } book(s) to be released within { Properties.Settings.Default.NotifyWithin } day(s).");
+
+                            foreach (var item in todayBooks)
+                            {
+                                if (item.HasCover)
+                                {
+                                    SendToast($"{ item.Title } is releasing today!");
+                                }
+                                else
+                                {
+                                    SendToast($"{ item.Title } is releasing today!");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            SendToast($"{ AmazonContainer.BookCount } book(s) to be released within { Properties.Settings.Default.NotifyWithin } day(s).");
                         }
                     }
                 }
