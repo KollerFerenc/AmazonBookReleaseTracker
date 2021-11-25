@@ -69,7 +69,21 @@ namespace AmazonBookReleaseTracker
 
         public static async Task<Stream> GetHtml(Uri uri, CancellationToken cancellationToken = default)
         {
-            return await Utilities.client.GetStreamAsync(uri, cancellationToken);
+            try
+            {
+                return await Utilities.client.GetStreamAsync(uri, cancellationToken);
+            }
+            catch (HttpRequestException ex)
+            {
+                if (ex.Message.Contains("404"))
+                {
+                    return null;
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
     }
 }

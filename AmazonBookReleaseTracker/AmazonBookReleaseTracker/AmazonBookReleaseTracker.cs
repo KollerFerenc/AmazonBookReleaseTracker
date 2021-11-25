@@ -208,6 +208,8 @@ namespace AmazonBookReleaseTracker
             var seriesIds = Config.Settings.TrackedSeries;
             var booksIds = Config.Settings.TrackedBooks;
 
+            var oldReleasIds = new SortedSet<AmazonId>(new AmazonIdComparer());
+
             Log.Debug("Removing ignored series.");
             seriesIds.ExceptWith(Config.Settings.IgnoredIds);
 
@@ -221,7 +223,12 @@ namespace AmazonBookReleaseTracker
 
                 try
                 {
-                    if (tempSeries.ProcessHtml(html))
+                    if (html is null)
+                    {
+                        Log.Error($"Page for { seriesId.Asin } not available. Adding to ignore list.");
+                        oldReleasIds.Add(tempSeries.AmazonId);
+                    }
+                    else if (tempSeries.ProcessHtml(html))
                     {
                         Log.Debug("Removing ignored books from series.");
                         tempSeries.Books = tempSeries.Books.FindAll(b => !Config.Settings.IgnoredIds.Contains(b.AmazonId));
@@ -246,8 +253,6 @@ namespace AmazonBookReleaseTracker
 
             int count = amazonSeriesList.Sum(x => x.Books.Count);
 
-            var oldReleasIds = new SortedSet<AmazonId>(new AmazonIdComparer());
-
             cancellationToken.ThrowIfCancellationRequested();
             Log.Information($"Processing { count } + { booksIds.Count } books.");
             foreach (var series in amazonSeriesList)
@@ -257,7 +262,12 @@ namespace AmazonBookReleaseTracker
                     var html = await Utilities.GetHtml(book.GetUri(), cancellationToken);
                     try
                     {
-                        if (book.ProcessHtml(html))
+                        if (html is null)
+                        {
+                            Log.Error($"Page for { book.AmazonId.Asin } not available. Adding to ignore list.");
+                            oldReleasIds.Add(book.AmazonId);
+                        }
+                        else if (book.ProcessHtml(html))
                         {
                             if (Config.Settings.IgnoreReleasedBooks)
                             {
@@ -290,7 +300,12 @@ namespace AmazonBookReleaseTracker
                 var html = await Utilities.GetHtml(tempBook.GetUri(), cancellationToken);
                 try
                 {
-                    if (tempBook.ProcessHtml(html))
+                    if (html is null)
+                    {
+                        Log.Error($"Page for { tempBook.AmazonId.Asin } not available. Adding to ignore list.");
+                        oldReleasIds.Add(tempBook.AmazonId);
+                    }
+                    else if (tempBook.ProcessHtml(html))
                     {
                         if (Config.Settings.IgnoreReleasedBooks)
                         {
@@ -383,9 +398,14 @@ namespace AmazonBookReleaseTracker
             {
                 var tempBook = new AmazonBook(bookId);
                 var html = await Utilities.GetHtml(tempBook.GetUri(), cancellationToken);
+
                 try
                 {
-                    if (tempBook.ProcessHtml(html))
+                    if (html is null)
+                    {
+                        Log.Error($"Skipping { tempBook.AmazonId.Asin }, page not available.");
+                    }
+                    else if (tempBook.ProcessHtml(html))
                     {
                         amazonBooksList.Add(tempBook);
                     }

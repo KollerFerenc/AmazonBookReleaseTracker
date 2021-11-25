@@ -45,17 +45,17 @@ namespace AmazonBookReleaseTracker
             lines.Add($"Releases: { BookCount }");
             foreach (var book in AmazonBooks)
             {
-                lines.Add($"- { book.Title }: { book.ReleaseDate:d}");
+                lines.Add($"- { book.Title } ({ book.AmazonId.Asin }): { book.ReleaseDate:d}");
             }
 
             foreach (var series in AmazonSeries)
             {
                 if (series.Books.Count > 0)
                 {
-                    lines.Add($"- { series.Title } ({ series.Books.Count })");
+                    lines.Add($"- { series.Title } ({series.AmazonId.Asin}) ({ series.Books.Count })");
                     foreach (var book in series.Books)
                     {
-                        lines.Add($"\t- { book.Title }: { book.ReleaseDate:d}");
+                        lines.Add($"\t- { book.Title } ({ book.AmazonId.Asin }): { book.ReleaseDate:d}");
                     }
                 }
             }
