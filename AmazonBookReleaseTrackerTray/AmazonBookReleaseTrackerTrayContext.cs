@@ -92,7 +92,7 @@ namespace AmazonBookReleaseTrackerTray
             }
             else
             {
-                registryKey.DeleteValue(appName);
+                registryKey.DeleteValue(appName, throwOnMissingValue: false);
             }
         }
 
